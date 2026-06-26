@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>しょうねんやきゅう しゅびゲーム v3.5</title>
+<title>しょうねんやきゅう しゅびゲーム v3.6</title>
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;background:linear-gradient(180deg,#fff8e1,#e3f2fd);color:#222}
@@ -12,10 +12,10 @@
   .ver{font-size:10px;opacity:.9;background:#ff9800;padding:1px 6px;border-radius:8px;margin-left:4px}
   .topbar{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:12px}
   .topbar span{background:rgba(255,255,255,.2);padding:2px 8px;border-radius:12px}
-  .gradebar{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:6px}
-  .gradebar button{font-size:12px;padding:5px 10px;border:none;border-radius:18px;background:rgba(255,255,255,.25);color:#fff;font-weight:bold;cursor:pointer;box-shadow:none}
+  .gradebar{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .gradebar button{font-size:12px;padding:5px 12px;border:none;border-radius:18px;background:rgba(255,255,255,.25);color:#fff;font-weight:bold;cursor:pointer;box-shadow:none}
   .gradebar button.active{background:#ffd54f;color:#5d4037;box-shadow:0 0 0 2px #fff inset}
-  .wrap{max-width:1300px;margin:auto;padding:8px;display:grid;grid-template-columns:260px 1fr 300px;gap:8px}
+  .wrap{max-width:1300px;margin:auto;padding:8px;display:grid;grid-template-columns:280px 1fr 320px;gap:8px}
   @media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:4px;gap:4px}}
   .card{background:#fff;border-radius:14px;padding:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
   h3{margin:4px 0;color:#0b5394;font-size:14px}
@@ -23,7 +23,14 @@
   button.big{font-size:17px;padding:12px 18px;background:#e91e63;display:block;width:100%;margin:6px 0}
   button.sub{background:#4caf50}
   button.danger{background:#9e9e9e;font-size:11px;padding:5px 9px}
-  .qbox{background:#fffde7;border:2px dashed #ffb300;border-radius:12px;padding:8px 10px;font-size:15px;line-height:1.5;font-weight:bold;color:#5d4037}
+  .qbox{background:#fffde7;border:2px dashed #ffb300;border-radius:12px;padding:8px 10px;font-size:14px;line-height:1.6;font-weight:bold;color:#5d4037}
+  .qbox .row{display:flex;align-items:center;gap:6px;margin:2px 0;flex-wrap:wrap}
+  .out-icons{display:inline-flex;gap:3px}
+  .out-dot{width:14px;height:14px;border-radius:50%;border:2px solid #5d4037;display:inline-block}
+  .out-dot.on{background:#5d4037}
+  .runner-status{background:#fff;border:2px solid #5d4037;padding:2px 8px;border-radius:10px;font-size:13px}
+  .runner-status.run{background:#fff3e0;color:#e65100}
+  .runner-status.stop{background:#f3e5f5;color:#6a1b9a}
   .field-wrap{position:relative;width:100%;aspect-ratio:1/1;max-height:680px;user-select:none}
   svg.field{width:100%;height:100%;display:block;border-radius:14px;background:#7ec06f;pointer-events:none}
   .player,.runner,.batter,.outmark{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:bold;user-select:none;pointer-events:none}
@@ -42,10 +49,10 @@
   @keyframes flashGreen{0%,100%{filter:none}50%{filter:drop-shadow(0 0 10px #00e676)}}
   .target-base{animation:targetPulse 1.5s infinite}
   @keyframes targetPulse{0%,100%{filter:none}50%{filter:drop-shadow(0 0 8px #ff5722)}}
-  .result{font-size:22px;font-weight:bold;text-align:center;min-height:30px}
-  .ok{color:#2e7d32}.ng{color:#c62828}
+  .result{font-size:20px;font-weight:bold;text-align:center;min-height:28px}
+  .ok{color:#2e7d32}.ng{color:#c62828}.partial{color:#ff9800}
   .combo{background:#ff5722;color:#fff;padding:4px 10px;border-radius:8px;display:inline-block;font-weight:bold}
-  .next-box{margin-top:6px;background:#e3f2fd;border-left:4px solid #1976d2;padding:6px 10px;border-radius:6px;font-size:13px;color:#0d47a1;line-height:1.5}
+  .next-box{margin-top:6px;background:#e3f2fd;border-left:4px solid #1976d2;padding:6px 10px;border-radius:6px;font-size:12px;color:#0d47a1;line-height:1.5}
   .next-box b{color:#1565c0}
   .badge-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;margin-top:6px}
   .badge-cell{aspect-ratio:1/1;background:#eee;border-radius:4px;font-size:9px;display:flex;align-items:center;justify-content:center;color:#999;font-weight:bold}
@@ -56,36 +63,38 @@
   .gameover.show{display:flex}
   .gameover-box{background:#fff;padding:24px;border:5px solid #ffd700;border-radius:18px;text-align:center;max-width:280px}
   .small{font-size:10px;color:#666}
+  .step-indicator{background:#1976d2;color:#fff;padding:4px 10px;border-radius:10px;font-size:12px;display:inline-block;margin-left:6px}
   @media (max-width:768px) and (orientation:portrait){
     header{padding:6px}
     header h1{font-size:14px}
     .ver{font-size:9px}
     .topbar{font-size:10px;gap:4px}
     .topbar span{padding:1px 6px}
-    .gradebar button{font-size:11px;padding:4px 8px}
+    .gradebar button{font-size:11px;padding:4px 10px}
     .wrap{padding:4px;gap:4px}
     .card{padding:6px;border-radius:10px}
-    .qbox{font-size:13px;padding:6px;line-height:1.4}
-    .qbox div{margin:1px 0}
-    .field-wrap{max-height:48vh}
+    .qbox{font-size:12px;padding:6px;line-height:1.4}
+    .field-wrap{max-height:46vh}
     .player{width:30px;height:30px;font-size:10px;border-width:2px}
     .runner{font-size:18px}
     .batter{font-size:18px}
     .ballwrap{width:36px;height:36px}
-    .result{font-size:18px;min-height:24px}
-    button.big{font-size:15px;padding:10px}
+    .result{font-size:16px;min-height:22px}
+    button.big{font-size:14px;padding:10px}
     button{font-size:13px;padding:8px 12px}
     h3{font-size:12px;margin:2px 0}
     .next-box{font-size:11px;padding:5px 8px}
     .badge-cell{font-size:8px}
     .hint-arrow{font-size:10px;top:-20px}
     .outmark{font-size:14px;padding:1px 6px}
+    .out-dot{width:11px;height:11px}
+    .runner-status{font-size:11px;padding:1px 6px}
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>⚾ しょうねんやきゅう しゅびゲーム <span class="ver" id="modeLabel">4年生</span></h1>
+  <h1>⚾ しょうねんやきゅう しゅびゲーム <span class="ver" id="modeLabel">1〜4年生</span></h1>
   <div class="topbar">
     <span>とくてん: <b id="score">0</b></span>
     <span>ランク: <b id="rank">みならい</b> <span id="stars" class="rank-stars">★</span></span>
@@ -93,8 +102,7 @@
     <span class="hearts" id="hearts">❤️❤️❤️</span>
   </div>
   <div class="gradebar">
-    <button data-mode="low" id="btnLow">👶 1〜3年生</button>
-    <button data-mode="mid" id="btnMid">⚾ 4年生</button>
+    <button data-mode="low" id="btnLow" class="active">👶 1〜4年生</button>
     <button data-mode="high" id="btnHigh">🌟 5・6年生</button>
   </div>
 </header>
@@ -106,6 +114,10 @@
     <button class="big" id="startBtn">▶ スタート / つぎのもんだい</button>
     <button class="sub" id="replayBtn">🔁 もういちど</button>
     <button class="danger" id="resetBtn">リセット（このモードのみ）</button>
+    <div class="small" style="margin-top:6px">
+      💡 ライトゴロは いつも 1るい！<br>
+      💡 2アウトは フォースアウト ゆうせん！
+    </div>
   </div>
 
   <div class="card">
@@ -138,10 +150,10 @@
   </div>
 
   <div class="card">
-    <h3>📣 はんてい</h3>
+    <h3>📣 はんてい <span id="stepIndicator" class="step-indicator" style="display:none">1球目</span></h3>
     <div class="result" id="result">--</div>
     <h3 id="expTitle">💭 かいせつ</h3>
-    <div id="exp" class="qbox" style="font-size:13px">--</div>
+    <div id="exp" class="qbox" style="font-size:12px">--</div>
     <div id="nextBox" class="next-box" style="display:none">
       <b id="nextTitle">🎓 つぎのレベルなら…</b>
       <div id="nextText"></div>
@@ -163,7 +175,7 @@
 </div>
 
 <script>
-console.log("[守備ゲームv3.5] 起動");
+console.log("[守備ゲームv3.6] 起動");
 
 var field = document.getElementById('fieldwrap');
 var playersBox = document.getElementById('players');
@@ -188,15 +200,16 @@ Object.keys(players).forEach(function(k){
 });
 var bases = {HOME:[50,88,'ホーム'],B1:[80,58,'いちるい'],B2:[50,28,'にるい'],B3:[20,58,'さんるい']};
 var runnerHomePos = {'1':[80,62],'2':[50,32],'3':[20,62]};
+
 var hits = {
-  '投手ゴロ':{pos:'P',easy:'ピッチャーゴロ',ground:true},
-  'ファーストゴロ':{pos:'1B',easy:'ファーストゴロ',ground:true},
-  'セカンドゴロ':{pos:'2B',easy:'セカンドゴロ',ground:true},
-  'サードゴロ':{pos:'3B',easy:'サードゴロ',ground:true},
-  'ショートゴロ':{pos:'SS',easy:'ショートゴロ',ground:true},
-  'レフト前ヒット':{pos:'LF',easy:'レフトまえヒット',ground:false},
-  'センター前ヒット':{pos:'CF',easy:'センターまえヒット',ground:false},
-  'ライト前ヒット':{pos:'RF',easy:'ライトまえヒット',ground:false}
+  '投手ゴロ':{pos:'P',easy:'ピッチャーゴロ',ground:true,outfield:false,light:false},
+  'ファーストゴロ':{pos:'1B',easy:'ファーストゴロ',ground:true,outfield:false,light:false},
+  'セカンドゴロ':{pos:'2B',easy:'セカンドゴロ',ground:true,outfield:false,light:false},
+  'サードゴロ':{pos:'3B',easy:'サードゴロ',ground:true,outfield:false,light:false},
+  'ショートゴロ':{pos:'SS',easy:'ショートゴロ',ground:true,outfield:false,light:false},
+  'レフト前ヒット':{pos:'LF',easy:'レフトまえヒット',ground:false,outfield:true,light:false},
+  'センター前ヒット':{pos:'CF',easy:'センターまえヒット',ground:false,outfield:true,light:false},
+  'ライトゴロ':{pos:'RF',easy:'ライトゴロ',ground:false,outfield:true,light:true}
 };
 var hitKeys = Object.keys(hits);
 var cases = {
@@ -211,118 +224,182 @@ var cases = {
 };
 var caseKeys = Object.keys(cases);
 
-// =========== LOW (1〜3年生) ===========
-function answerLogicLow(c,h){
+// =========== Helper: nearest force base when 2 out ===========
+function nearestForce(c,h){
+  // returns base list available for force
+  var has1=(c==='1'||c==='1_2'||c==='1_3'||c==='満塁');
+  var has2=(c==='1_2'||c==='満塁');
+  var has3=(c==='満塁');
+  var bases_force=['B1'];
+  if(has1) bases_force.push('B2');
+  if(has2) bases_force.push('B3');
+  if(has3) bases_force.push('HOME');
+  // pick nearest to fielder
+  var fp=players[hits[h].pos];
+  var best='B1', bestD=999;
+  bases_force.forEach(function(b){
+    var bp=bases[b];
+    var d=Math.hypot(bp[0]-fp[0],bp[1]-fp[1]);
+    if(d<bestD){bestD=d;best=b;}
+  });
+  return best;
+}
+
+// =========== LOW MODE (1〜4年生) - no gettsuu ===========
+function answerLogicLow(c,h,outCount,runnerAction){
   var hit=hits[h];
-  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
-  if(hasR3){
-    return {base:'HOME',low:'3るいランナーが いるよ！ まず ホームに なげて 1てんを ふせごう！'};
+  // ライトゴロ特例
+  if(hit.light){
+    return {steps:['B1'],low:'ライトゴロは いつでも 1るい！ バッターランナーを アウトに しよう！'};
   }
+  // 2アウト = フォース優先
+  if(outCount===2 && hit.ground){
+    var nb=nearestForce(c,h);
+    return {steps:[nb],low:'2アウトだから いちばん ちかい フォースアウトで チェンジ！',out2:true};
+  }
+  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
+  // 3塁ランナー系 + 内野ゴロ
+  if(hasR3 && hit.ground){
+    if(runnerAction==='run'){
+      return {steps:['HOME'],low:'3るいランナーが はしってる！ ホームに なげて 1てんを ふせごう！'};
+    } else {
+      return {steps:['B1'],low:'3るいランナーは とまってる。まず いちるいで アウトを とって ホームを みよう！'};
+    }
+  }
+  if(hasR3 && hit.outfield){
+    return {steps:['HOME'],low:'3るいランナーを かえさない ように ホームへ なげよう！'};
+  }
+  // 2塁ランナー単独 + 内野ゴロ
+  if(c==='2' && hit.ground){
+    if(runnerAction==='run'){
+      return {steps:['B3'],low:'2るいランナーが はしってる！ さんるいに なげて とめよう！'};
+    } else {
+      return {steps:['B1'],low:'2るいランナーは とまってる。いちるいで かくじつに 1アウト！'};
+    }
+  }
+  if(c==='2' && hit.outfield){
+    return {steps:['HOME'],low:'2るいランナーが ホームに かえらない ように ホームへ！'};
+  }
+  // 1塁 + ゴロ
+  if(c==='1' && hit.ground){
+    return {steps:['B1'],low:'まずは いちるいで かくじつに 1アウトを とろう！'};
+  }
+  if(c==='1' && h==='レフト前ヒット'){
+    return {steps:['B3'],low:'1るいランナーが 3るいまで いかない ように さんるいに なげよう！'};
+  }
+  if(c==='1' && hit.outfield){
+    return {steps:['B2'],low:'バッターを 2るいに させない ように にるいに なげよう！'};
+  }
+  // 1・2塁 + サード/ショートゴロ
+  if(c==='1_2' && (h==='サードゴロ'||h==='ショートゴロ')){
+    return {steps:['B3'],low:'さんるいで フォースアウト！ いちばん さきの ランナーを アウトに！'};
+  }
+  if(c==='1_2' && hit.ground){
+    return {steps:['B1'],low:'まず いちるいで 1アウト！ そのあと ホームを みよう！'};
+  }
+  if(c==='1_2' && hit.outfield){
+    return {steps:['B3'],low:'バッターより まず ランナーを とめよう！ さんるいへ！'};
+  }
+  // ランナーなし
   if(hit.ground){
-    return {base:'B1',low:'ゴロは まず いちるい！ かくじつに 1アウトを とろう！'};
+    return {steps:['B1'],low:'まずは いちるいで アウト！'};
   }
-  // outfield
-  if(c==='1' && h==='レフト前ヒット')
-    return {base:'B3',low:'1るいランナーが 3るいに いかない ように さんるいに なげよう！'};
-  if(c==='2')
-    return {base:'HOME',low:'2るいランナーが ホームに かえらない ように ホームへ！'};
-  return {base:'B2',low:'バッターを 2るいに させない ように にるいへ なげよう！'};
+  return {steps:['B2'],low:'バッターを 2るいに させない ように にるいへ！'};
 }
 
-// =========== MID (4年生) ===========
-function answerLogicMid(c,h){
+// =========== HIGH MODE (5・6年生) - with gettsuu ===========
+function answerLogicHigh(c,h,outCount,runnerAction){
   var hit=hits[h];
+  // ライトゴロ特例
+  if(hit.light){
+    return {steps:['B1'],low:'ライトゴロは いつでも 1るい！ ライトと いちるいは ちかいから 確実に。'};
+  }
+  // 2アウト = フォース優先（ゲッツー不要）
+  if(outCount===2 && hit.ground){
+    var nb=nearestForce(c,h);
+    return {steps:[nb],low:'2アウトは フォースアウト最優先。一番近いベースで チェンジ！',out2:true};
+  }
   var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
-  if(hasR3){
-    if(hit.ground){
-      if(c==='満塁') return {base:'HOME',low:'まんるいの ゴロは ホームで フォースアウト！ キャッチャーが ベースを ふめば アウト！'};
-      return {base:'HOME',low:'3るいランナーが ホームに かえって しまうよ。まず ホームに なげて 1てんを ふせごう！'};
+  // 満塁 + ゴロ (0/1アウト) → ゲッツー狙い
+  if(c==='満塁' && hit.ground && outCount<2){
+    return {steps:['HOME','B1'],low:'ホーム→1塁でゲッツー！ 1点も与えず 2アウト取る。',gettsuu:true};
+  }
+  // 3塁ランナー系 + 内野ゴロ（満塁以外）
+  if(hasR3 && hit.ground){
+    if(runnerAction==='run'){
+      return {steps:['HOME'],low:'3塁ランナーがスタート！バックホームで1点を防ぐ。'};
+    } else {
+      return {steps:['B1'],low:'3塁ランナー止まってる。1塁で確実にアウト、その後ホーム警戒。'};
     }
-    return {base:'HOME',low:'ヒットでも 3るいランナーを かえさない ように ホームへ なげよう！'};
   }
-  if(c==='1'){
-    if(h==='セカンドゴロ'||h==='ショートゴロ')
-      return {base:'B2',low:'ゲッツーの チャンス！ にるいで フォースアウト、そのあと いちるいに なげよう！'};
-    if(hit.ground) return {base:'B1',low:'まずは いちるいで かくじつに 1アウトを とろう！'};
-    if(h==='レフト前ヒット') return {base:'B3',low:'1るいランナーが 3るいまで いかない ように さんるいに なげよう！'};
-    return {base:'B2',low:'バッターを 2るいに させない ように にるいに なげよう！'};
+  if(hasR3 && hit.outfield){
+    return {steps:['HOME'],low:'外野→カットマン→本塁。3塁ランナーをアウトに。'};
   }
-  if(c==='1_2'){
-    if(h==='サードゴロ'||h==='ショートゴロ')
-      return {base:'B3',low:'さんるいで フォースアウト！ いちばん さきの ランナーを アウトに しよう！'};
-    if(hit.ground) return {base:'B1',low:'まずは いちるいで かくじつに 1アウト！'};
-    return {base:'B3',low:'バッターより まず ランナーを とめよう！ さんるいに なげよう！'};
+  // 2塁ランナー単独 + 内野ゴロ → 走ってる/止まってる
+  if(c==='2' && hit.ground){
+    if(runnerAction==='run'){
+      return {steps:['B3'],low:'2塁ランナー走ってる！3塁送球で進塁阻止。'};
+    } else {
+      return {steps:['B1'],low:'2塁ランナー止まってる。1塁で確実に1アウト。バックホームはしない。'};
+    }
   }
-  if(c==='2'){
-    if(hit.ground) return {base:'B1',low:'まずは いちるいで バッターを アウト！ 2るいランナーは すすんでも OK！'};
-    return {base:'HOME',low:'2るいランナーが ホームに かえらない ように ホームへ！'};
+  if(c==='2' && hit.outfield){
+    return {steps:['HOME'],low:'外野→カットマン→本塁。深い打球なら2塁で止める判断も。'};
   }
-  if(hit.ground) return {base:'B1',low:'まずは いちるいで アウト！'};
-  return {base:'B2',low:'バッターを 2るいに させない ように にるいへ！'};
+  // 1塁 + セカンド/ショートゴロ → ゲッツー
+  if(c==='1' && (h==='セカンドゴロ'||h==='ショートゴロ')){
+    return {steps:['B2','B1'],low:'4-6-3 / 6-4-3 ダブルプレー狙い！二塁手はベースを踏みながら一塁送球。',gettsuu:true};
+  }
+  if(c==='1' && hit.ground){
+    return {steps:['B1'],low:'1塁送球で確実に1アウト。サードゴロは状況で2塁送球も。'};
+  }
+  if(c==='1' && h==='レフト前ヒット'){
+    return {steps:['B3'],low:'バックサード。1塁ランナーの3塁進塁を阻止。'};
+  }
+  if(c==='1' && hit.outfield){
+    return {steps:['B2'],low:'打者走者を2塁で止める。中継プレーで判断切替。'};
+  }
+  // 1・2塁 + サード/ショートゴロ → 3B→1Bゲッツー
+  if(c==='1_2' && (h==='サードゴロ'||h==='ショートゴロ')){
+    return {steps:['B3','B1'],low:'5-3 / 6-5-3 のゲッツー狙い！前のランナー優先で3塁→1塁。',gettsuu:true};
+  }
+  if(c==='1_2' && hit.ground){
+    return {steps:['B1'],low:'1塁送球で1アウト確実。打球が緩ければゲッツー狙いも。'};
+  }
+  if(c==='1_2' && hit.outfield){
+    return {steps:['B3'],low:'バックサードで2塁ランナーを止める。深い打球はバックホーム。'};
+  }
+  // ランナーなし
+  if(hit.ground){
+    return {steps:['B1'],low:'1塁送球で確実に1アウト。基本形。'};
+  }
+  return {steps:['B2'],low:'中継プレーで打者を2塁で止める。'};
 }
 
-// =========== HIGH (5・6年生) ===========
-function answerLogicHigh(c,h){
-  var hit=hits[h];
-  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
-  if(hasR3){
-    if(hit.ground){
-      return {base:'HOME',low:'前進守備でバックホーム！フォースアウトかタッチプレーで1点を防ぐ。'};
-    }
-    return {base:'HOME',low:'外野→カットマン（中継）→本塁。バックホームで3塁ランナーをアウトに。'};
-  }
-  if(c==='1'){
-    if(h==='セカンドゴロ'||h==='ショートゴロ')
-      return {base:'B2',low:'4-6-3 / 6-4-3 のダブルプレー狙い。二塁手はベースを踏みながら一塁送球。'};
-    if(hit.ground) return {base:'B1',low:'1塁送球で確実に1アウト。サードゴロは状況で2塁送球も。'};
-    if(h==='レフト前ヒット') return {base:'B3',low:'バックサード。1塁ランナーの3塁進塁を阻止。中継はショート経由。'};
-    return {base:'B2',low:'打者走者を2塁で止める。中継プレーで判断を切り替える。'};
-  }
-  if(c==='1_2'){
-    if(h==='サードゴロ'||h==='ショートゴロ')
-      return {base:'B3',low:'5-3 / 6-5-3 のフォースアウト+1塁ゲッツー狙い。前のランナー優先。'};
-    if(hit.ground) return {base:'B1',low:'1-3 / 3-3 / 4-3 のゲッツー狙いも。ピッチャー前は本塁送球の選択も。'};
-    return {base:'HOME',low:'バックホームで2塁ランナーを刺す。中継プレーで他ランナーの進塁にも対応。'};
-  }
-  if(c==='2'){
-    if(hit.ground) return {base:'HOME',low:'内野前進守備ならバックホーム。中間守備なら1塁。チーム戦略で判断。'};
-    return {base:'HOME',low:'外野→カットマン→本塁。深い打球は本塁を諦めて打者を2塁で止める。'};
-  }
-  if(hit.ground) return {base:'B1',low:'1塁送球で確実に1アウト。'};
-  return {base:'B2',low:'中継プレーで打者を2塁で止める。深い打球は1塁返球。'};
-}
-
-// =========== NEXT-LEVEL commentary mapping ===========
-// always show the "次のレベル" tip
-function nextCommentary(mode,c,h){
+function nextCommentary(mode,c,h,outCount,runnerAction){
   if(mode==='low'){
-    // show mid-level reasoning
-    var m=answerLogicMid(c,h);
-    return {title:'⚾ 4年生になったら…', text:m.low};
+    var hi=answerLogicHigh(c,h,outCount,runnerAction);
+    var stepLabel=hi.steps.map(function(s){return bases[s][2];}).join(' → ');
+    var extra = hi.gettsuu ? '（ゲッツー狙い！）' : '';
+    return {title:'🌟 5・6年生になったら…', text:'「'+stepLabel+'」'+extra+' '+hi.low};
   }
-  if(mode==='mid'){
-    var hi=answerLogicHigh(c,h);
-    return {title:'🌟 5・6年生になったら…', text:hi.low};
-  }
-  // high → 中学・本格野球
-  return {title:'🏆 中学・本格野球なら…', text:'状況判断（点差・回・アウトカウント）と守備シフト（前進・中間・後ろ）を組み合わせ、複数の選択肢から最適解を選ぶ。チーム戦略・サイン・バッテリーとの連動も重要。'};
+  return {title:'🏆 中学・本格野球なら…', text:'カウント・点差・回・打者の足・チーム戦略まで含めて判断。守備シフト（前進/中間/後ろ）も組み合わせる。'};
 }
 
 // =========== Mode management ===========
-var modeLabels = {low:'1〜3年生',mid:'4年生',high:'5・6年生'};
-var currentMode = localStorage.getItem('byb35_mode') || 'mid';
+var modeLabels = {low:'1〜4年生',high:'5・6年生'};
+var currentMode = localStorage.getItem('byb36_mode') || 'low';
 
-function answerLogic(c,h){
-  if(currentMode==='low') return answerLogicLow(c,h);
-  if(currentMode==='high') return answerLogicHigh(c,h);
-  return answerLogicMid(c,h);
+function answerLogic(c,h,o,ra){
+  if(currentMode==='high') return answerLogicHigh(c,h,o,ra);
+  return answerLogicLow(c,h,o,ra);
 }
 
 function setMode(m){
   currentMode = m;
-  localStorage.setItem('byb35_mode',m);
+  localStorage.setItem('byb36_mode',m);
   document.getElementById('modeLabel').textContent = modeLabels[m];
-  ['low','mid','high'].forEach(function(k){
+  ['low','high'].forEach(function(k){
     var b=document.getElementById('btn'+k.charAt(0).toUpperCase()+k.slice(1));
     if(b) b.classList.toggle('active', k===m);
   });
@@ -334,11 +411,12 @@ function setMode(m){
   document.getElementById('nextBox').style.display='none';
 }
 
-// =========== State (per mode) ===========
 var score=0, combo=0, lives=3, cleared={};
-var currentCase=null, currentHit=null, currentAnswer=null, canDrag=false;
+var currentCase=null, currentHit=null, currentOut=0, currentAction=null, currentAnswer=null;
+var canDrag=false;
+var currentStep=0; // for gettsuu multi-step
 
-function stateKey(){ return 'byb35_'+currentMode; }
+function stateKey(){ return 'byb36_'+currentMode; }
 function loadStateForMode(){
   var st={};
   try{ st=JSON.parse(localStorage.getItem(stateKey())||'{}'); }catch(e){}
@@ -358,6 +436,13 @@ function rankInfo(s){
   if(s>=300)  return {name:'レギュラー',stars:'★★'};
   return {name:'みならい',stars:'★'};
 }
+
+function outDotsHTML(n){
+  var h='';
+  for(var i=0;i<3;i++){ h+='<span class="out-dot'+(i<n?' on':'')+'"></span>'; }
+  return '<span class="out-icons">'+h+'</span>';
+}
+
 function updateUI(){
   document.getElementById('score').textContent=score;
   var r=rankInfo(score);
@@ -377,22 +462,27 @@ function updateUI(){
       grid.appendChild(d);
     });
   });
-  // expTitle by mode
-  var t='💭 かいせつ';
-  if(currentMode==='low') t='💭 かいせつ（1〜3年生）';
-  if(currentMode==='mid') t='💭 かいせつ（4年生）';
-  if(currentMode==='high') t='💭 かいせつ（5・6年生）';
+  var t='💭 かいせつ（'+modeLabels[currentMode]+'）';
   document.getElementById('expTitle').textContent=t;
 }
+
 function clearDynamics(){runnersBox.innerHTML='';outBox.innerHTML='';}
-function placeRunners(c){
+function placeRunners(c,action){
   clearDynamics();
   cases[c].runners.forEach(function(r){
     var p=runnerHomePos[r];
     var d=document.createElement('div');
     d.className='runner'; d.dataset.from=r;
     d.style.left=p[0]+'%'; d.style.top=p[1]+'%';
-    d.textContent='🏃'; runnersBox.appendChild(d);
+    // show running emoji for specific runner who is "moving"
+    var emoji='🏃';
+    // 3塁ランナーが走ってるなら3塁ランナーを強調
+    if(action==='run' && r==='3') emoji='🏃‍♂️💨';
+    if(action==='stop' && r==='3') emoji='🛑';
+    if(action==='run' && r==='2' && (c==='2')) emoji='🏃‍♂️💨';
+    if(action==='stop' && r==='2' && (c==='2')) emoji='🛑';
+    d.textContent=emoji;
+    runnersBox.appendChild(d);
   });
 }
 function placeBatter(){
@@ -408,6 +498,7 @@ function removeGlow(){var ps=document.querySelectorAll('.player');for(var i=0;i<
 function removeTarget(){var ps=document.querySelectorAll('rect');for(var i=0;i<ps.length;i++)ps[i].classList.remove('target-base');}
 function movePlayerTo(key,x,y){var el=document.getElementById('pl_'+key);el.style.left=x+'%';el.style.top=y+'%';}
 function resetPlayerPositions(){Object.keys(originalPos).forEach(function(k){var v=originalPos[k];movePlayerTo(k,v[0],v[1]);});}
+
 function arcAnimate(el,sx,sy,ex,ey,arc,dur,cb){
   var steps=Math.max(20,Math.round(dur/16));
   var midX=(sx+ex)/2, midY=Math.min(sy,ey)-arc;
@@ -430,6 +521,33 @@ function animateBallToFielder(targetPos,cb){
   arcAnimate(ballwrap,50,90,targetPos[0],targetPos[1],15,900,cb);
 }
 
+function buildQuestionText(){
+  var c=cases[currentCase].label;
+  var h=hits[currentHit].easy;
+  var outStr=outDotsHTML(currentOut)+' '+currentOut+'アウト';
+  var actionStr='';
+  if(currentAction){
+    var label='';
+    if(currentCase==='2') label='2るいランナー';
+    else label='3るいランナー';
+    var cls=currentAction==='run'?'run':'stop';
+    var text=currentAction==='run'?'🏃 はしってる！':'🛑 とまってる';
+    actionStr='<div class="row"><span>'+label+':</span><span class="runner-status '+cls+'">'+text+'</span></div>';
+  }
+  return '<div class="row">🏃 <b>'+c+'</b></div>'+
+         '<div class="row">⚾ <b>'+h+'</b></div>'+
+         '<div class="row">🔢 '+outStr+'</div>'+
+         actionStr+
+         '<div class="row">👉 どこに なげる？</div>';
+}
+
+function needRunnerAction(c,h){
+  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
+  if(hasR3 && hits[h].ground) return true;
+  if(c==='2' && hits[h].ground) return true;
+  return false;
+}
+
 function nextQ(){
   if(lives<=0){document.getElementById('gameover').classList.add('show');return;}
   removeGlow();removeTarget();
@@ -437,15 +555,22 @@ function nextQ(){
   document.getElementById('result').textContent='--';
   document.getElementById('exp').textContent='ボールが とどいたら ベースまで うごかしてね！';
   document.getElementById('nextBox').style.display='none';
+  document.getElementById('stepIndicator').style.display='none';
+
   currentCase=caseKeys[Math.floor(Math.random()*caseKeys.length)];
   currentHit=hitKeys[Math.floor(Math.random()*hitKeys.length)];
-  currentAnswer=answerLogic(currentCase,currentHit);
-  placeBatter(); placeRunners(currentCase);
-  var c=cases[currentCase].label, h=hits[currentHit].easy;
-  document.getElementById('qbox').innerHTML=
-    '<div>🏃 <b>'+c+'</b> だよ！</div>'+
-    '<div>⚾ <b>'+h+'</b> が きた！</div>'+
-    '<div>👉 どこに なげる？</div>';
+  currentOut=Math.floor(Math.random()*3);
+  currentAction = needRunnerAction(currentCase,currentHit) ? (Math.random()<0.5?'run':'stop') : null;
+  // 2アウトはランナー動作不要（フォース優先のため）
+  if(currentOut===2) currentAction=null;
+  currentAnswer=answerLogic(currentCase,currentHit,currentOut,currentAction);
+  currentStep=0;
+
+  placeBatter();
+  placeRunners(currentCase,currentAction);
+
+  document.getElementById('qbox').innerHTML=buildQuestionText();
+
   canDrag=false; hintArrow.style.display='none';
   var tk=hits[currentHit].pos;
   var tp=[players[tk][0],players[tk][1]];
@@ -454,12 +579,15 @@ function nextQ(){
     canDrag=true; hintArrow.style.display='block';
   });
 }
+
 function replay(){
   if(!currentHit){nextQ();return;}
   removeGlow();
   var tk=hits[currentHit].pos;
   var tp=[players[tk][0],players[tk][1]];
   canDrag=false;
+  currentStep=0;
+  document.getElementById('stepIndicator').style.display='none';
   animateBallToFielder(tp,function(){
     document.getElementById('pl_'+tk).classList.add('glow');
     canDrag=true;
@@ -516,11 +644,11 @@ ballwrap.addEventListener('touchstart',function(e){onDown(e);},{passive:false});
 document.addEventListener('touchmove',function(e){if(dragging)e.preventDefault();onMove(e);},{passive:false});
 document.addEventListener('touchend',onUp);
 
-function showOut(x,y){
+function showOut(x,y,text){
   var d=document.createElement('div');
   d.className='outmark';
   d.style.left=x+'%';d.style.top=(y-6)+'%';
-  d.textContent='❌ アウト!';
+  d.textContent=text||'❌ アウト!';
   outBox.appendChild(d);
 }
 function showRun(text,x,y,color){
@@ -531,38 +659,72 @@ function showRun(text,x,y,color){
   d.textContent=text;
   outBox.appendChild(d);
 }
-function judge(baseKey){
-  removeGlow(); canDrag=false;
-  var tk=hits[currentHit].pos;
-  var fielderPos=[players[tk][0],players[tk][1]];
-  var basePos=bases[baseKey];
-  // show next-level commentary
-  var nx = nextCommentary(currentMode,currentCase,currentHit);
+
+function showNextCommentary(){
+  var nx = nextCommentary(currentMode,currentCase,currentHit,currentOut,currentAction);
   document.getElementById('nextBox').style.display='block';
   document.getElementById('nextTitle').textContent=nx.title;
   document.getElementById('nextText').textContent=nx.text;
-  if(baseKey===currentAnswer.base){
-    score+=100; combo++;
-    cleared[currentCase+'|'+currentHit]=true;
-    saveState();
-    document.getElementById('result').innerHTML='<span class="ok">〇 せいかい！</span>';
-    document.getElementById('exp').textContent='⭐ '+currentAnswer.low;
-    var tx=fielderPos[0]+(basePos[0]-fielderPos[0])*0.4;
-    var ty=fielderPos[1]+(basePos[1]-fielderPos[1])*0.4;
-    movePlayerTo(tk,tx,ty);
-    arcAnimate(ballwrap,fielderPos[0],fielderPos[1],basePos[0],basePos[1],10,700,function(){
+}
+
+function judge(baseKey){
+  removeGlow(); canDrag=false;
+  var expected=currentAnswer.steps[currentStep];
+  var fielderKey = currentStep===0 ? hits[currentHit].pos : null;
+  var fromPos;
+  if(currentStep===0){
+    fromPos=[players[hits[currentHit].pos][0], players[hits[currentHit].pos][1]];
+  } else {
+    var prevBase = currentAnswer.steps[currentStep-1];
+    fromPos = [bases[prevBase][0], bases[prevBase][1]];
+  }
+  var basePos=bases[baseKey];
+
+  if(baseKey===expected){
+    // step correct
+    var isLast = (currentStep === currentAnswer.steps.length-1);
+    arcAnimate(ballwrap,fromPos[0],fromPos[1],basePos[0],basePos[1],10,700,function(){
       var bel=document.getElementById('b'+baseKey);
       bel.classList.add('base-flash');
       setTimeout(function(){bel.classList.remove('base-flash');},1200);
       showOut(basePos[0],basePos[1]);
+      if(isLast){
+        // complete
+        var addScore=100;
+        var msg='〇 せいかい！';
+        if(currentAnswer.gettsuu && currentAnswer.steps.length===2){
+          addScore=200;
+          msg='🎉 ゲッツーせいこう！ +200';
+        } else if(currentAnswer.out2){
+          addScore=150;
+          msg='〇 2アウトフォース！ +150';
+        }
+        score+=addScore; combo++;
+        cleared[currentCase+'|'+currentHit]=true;
+        saveState();
+        document.getElementById('result').innerHTML='<span class="ok">'+msg+'</span>';
+        document.getElementById('exp').textContent='⭐ '+currentAnswer.low;
+        document.getElementById('stepIndicator').style.display='none';
+        showNextCommentary();
+        updateUI();
+      } else {
+        // continue to next step
+        currentStep++;
+        document.getElementById('stepIndicator').style.display='inline-block';
+        document.getElementById('stepIndicator').textContent=(currentStep+1)+'球目: '+bases[currentAnswer.steps[currentStep]][2]+'へ！';
+        document.getElementById('result').innerHTML='<span class="partial">⚡ 1アウト！次へ送球！</span>';
+        canDrag=true;
+        hintArrow.style.display='block';
+      }
     });
-    updateUI();
   } else {
+    // wrong
     combo=0; lives--;
+    var expectLabel = currentAnswer.steps.map(function(s){return bases[s][2];}).join('→');
     document.getElementById('result').innerHTML='<span class="ng">× ざんねん…</span>';
-    var ansLabel=bases[currentAnswer.base][2];
-    document.getElementById('exp').textContent='せいかいは「'+ansLabel+'」だよ！ '+currentAnswer.low;
-    document.getElementById('b'+currentAnswer.base).classList.add('target-base');
+    document.getElementById('exp').textContent='せいかいは「'+expectLabel+'」だよ！ '+currentAnswer.low;
+    currentAnswer.steps.forEach(function(s){document.getElementById('b'+s).classList.add('target-base');});
+    showNextCommentary();
     var rs=document.querySelectorAll('.runner');
     rs.forEach(function(r){
       var from=r.dataset.from;
@@ -580,14 +742,13 @@ document.getElementById('startBtn').addEventListener('click',nextQ);
 document.getElementById('replayBtn').addEventListener('click',replay);
 document.getElementById('resetBtn').addEventListener('click',resetAll);
 document.getElementById('btnLow').addEventListener('click',function(){setMode('low');});
-document.getElementById('btnMid').addEventListener('click',function(){setMode('mid');});
 document.getElementById('btnHigh').addEventListener('click',function(){setMode('high');});
 
 placeBatter();
 loadStateForMode();
 setMode(currentMode);
 updateUI();
-console.log("[v3.5] ready, mode=",currentMode);
+console.log("[v3.6] ready, mode=",currentMode);
 </script>
 </body>
 </html>
