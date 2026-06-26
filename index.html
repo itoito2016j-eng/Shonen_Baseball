@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>しょうねんやきゅう しゅびゲーム v3.5</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;background:linear-gradient(180deg,#fff8e1,#e3f2fd);color:#222}
+  header{background:linear-gradient(90deg,#0b5394,#1f78d1);color:#fff;padding:8px 12px;text-align:center}
+  header h1{margin:0;font-size:18px}
+  .ver{font-size:10px;opacity:.9;background:#ff9800;padding:1px 6px;border-radius:8px;margin-left:4px}
+  .topbar{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:12px}
+  .topbar span{background:rgba(255,255,255,.2);padding:2px 8px;border-radius:12px}
+  .gradebar{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:6px}
+  .gradebar button{font-size:12px;padding:5px 10px;border:none;border-radius:18px;background:rgba(255,255,255,.25);color:#fff;font-weight:bold;cursor:pointer;box-shadow:none}
+  .gradebar button.active{background:#ffd54f;color:#5d4037;box-shadow:0 0 0 2px #fff inset}
+  .wrap{max-width:1300px;margin:auto;padding:8px;display:grid;grid-template-columns:260px 1fr 300px;gap:8px}
+  @media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:4px;gap:4px}}
+  .card{background:#fff;border-radius:14px;padding:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+  h3{margin:4px 0;color:#0b5394;font-size:14px}
+  button{font-size:15px;padding:10px 14px;border:none;border-radius:24px;background:#ff9800;color:#fff;font-weight:bold;cursor:pointer;margin:3px 2px;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+  button.big{font-size:17px;padding:12px 18px;background:#e91e63;display:block;width:100%;margin:6px 0}
+  button.sub{background:#4caf50}
+  button.danger{background:#9e9e9e;font-size:11px;padding:5px 9px}
+  .qbox{background:#fffde7;border:2px dashed #ffb300;border-radius:12px;padding:8px 10px;font-size:15px;line-height:1.5;font-weight:bold;color:#5d4037}
+  .field-wrap{position:relative;width:100%;aspect-ratio:1/1;max-height:680px;user-select:none}
+  svg.field{width:100%;height:100%;display:block;border-radius:14px;background:#7ec06f;pointer-events:none}
+  .player,.runner,.batter,.outmark{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:bold;user-select:none;pointer-events:none}
+  .player{width:38px;height:38px;border-radius:50%;color:#fff;font-size:11px;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3);transition:left .8s ease,top .8s ease,transform .3s,box-shadow .3s}
+  .player.glow{transform:translate(-50%,-50%) scale(1.25);box-shadow:0 0 14px 6px #ffeb3b}
+  .if{background:#f39c12}.of{background:#27ae60}.p{background:#3498db}.c{background:#e74c3c}
+  .runner{font-size:24px;transition:left 1s ease,top 1s ease}
+  .batter{font-size:24px}
+  .outmark{font-size:18px;color:#c62828;font-weight:900;background:rgba(255,255,255,.85);padding:2px 8px;border-radius:10px}
+  .ballwrap{position:absolute;width:42px;height:42px;transform:translate(-50%,-50%);cursor:grab;z-index:10;left:50%;top:90%;display:flex;align-items:center;justify-content:center}
+  .ballwrap.pulse{filter:drop-shadow(0 0 10px #fff200)}
+  .ball-svg{width:100%;height:100%;pointer-events:none}
+  .hint-arrow{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:12px;color:#fff;font-weight:bold;background:#e91e63;padding:2px 8px;border-radius:10px;white-space:nowrap;animation:bounce 1s infinite;pointer-events:none}
+  @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+  .base-flash{animation:flashGreen .6s 2}
+  @keyframes flashGreen{0%,100%{filter:none}50%{filter:drop-shadow(0 0 10px #00e676)}}
+  .target-base{animation:targetPulse 1.5s infinite}
+  @keyframes targetPulse{0%,100%{filter:none}50%{filter:drop-shadow(0 0 8px #ff5722)}}
+  .result{font-size:22px;font-weight:bold;text-align:center;min-height:30px}
+  .ok{color:#2e7d32}.ng{color:#c62828}
+  .combo{background:#ff5722;color:#fff;padding:4px 10px;border-radius:8px;display:inline-block;font-weight:bold}
+  .next-box{margin-top:6px;background:#e3f2fd;border-left:4px solid #1976d2;padding:6px 10px;border-radius:6px;font-size:13px;color:#0d47a1;line-height:1.5}
+  .next-box b{color:#1565c0}
+  .badge-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;margin-top:6px}
+  .badge-cell{aspect-ratio:1/1;background:#eee;border-radius:4px;font-size:9px;display:flex;align-items:center;justify-content:center;color:#999;font-weight:bold}
+  .badge-cell.cleared{background:#ffd54f;color:#5d4037}
+  .hearts{font-size:18px}
+  .rank-stars{font-size:14px;color:#ffd700}
+  .gameover{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:99}
+  .gameover.show{display:flex}
+  .gameover-box{background:#fff;padding:24px;border:5px solid #ffd700;border-radius:18px;text-align:center;max-width:280px}
+  .small{font-size:10px;color:#666}
+  @media (max-width:768px) and (orientation:portrait){
+    header{padding:6px}
+    header h1{font-size:14px}
+    .ver{font-size:9px}
+    .topbar{font-size:10px;gap:4px}
+    .topbar span{padding:1px 6px}
+    .gradebar button{font-size:11px;padding:4px 8px}
+    .wrap{padding:4px;gap:4px}
+    .card{padding:6px;border-radius:10px}
+    .qbox{font-size:13px;padding:6px;line-height:1.4}
+    .qbox div{margin:1px 0}
+    .field-wrap{max-height:48vh}
+    .player{width:30px;height:30px;font-size:10px;border-width:2px}
+    .runner{font-size:18px}
+    .batter{font-size:18px}
+    .ballwrap{width:36px;height:36px}
+    .result{font-size:18px;min-height:24px}
+    button.big{font-size:15px;padding:10px}
+    button{font-size:13px;padding:8px 12px}
+    h3{font-size:12px;margin:2px 0}
+    .next-box{font-size:11px;padding:5px 8px}
+    .badge-cell{font-size:8px}
+    .hint-arrow{font-size:10px;top:-20px}
+    .outmark{font-size:14px;padding:1px 6px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>⚾ しょうねんやきゅう しゅびゲーム <span class="ver" id="modeLabel">4年生</span></h1>
+  <div class="topbar">
+    <span>とくてん: <b id="score">0</b></span>
+    <span>ランク: <b id="rank">みならい</b> <span id="stars" class="rank-stars">★</span></span>
+    <span>バッジ: <b id="badgeN">0</b>/64</span>
+    <span class="hearts" id="hearts">❤️❤️❤️</span>
+  </div>
+  <div class="gradebar">
+    <button data-mode="low" id="btnLow">👶 1〜3年生</button>
+    <button data-mode="mid" id="btnMid">⚾ 4年生</button>
+    <button data-mode="high" id="btnHigh">🌟 5・6年生</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h3>🎯 もんだい</h3>
+    <div class="qbox" id="qbox">「▶ スタート」を おしてね！</div>
+    <button class="big" id="startBtn">▶ スタート / つぎのもんだい</button>
+    <button class="sub" id="replayBtn">🔁 もういちど</button>
+    <button class="danger" id="resetBtn">リセット（このモードのみ）</button>
+  </div>
+
+  <div class="card">
+    <div class="field-wrap" id="fieldwrap">
+      <svg class="field" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M50,88 L80,58 L50,28 L20,58 Z" fill="#d2a76a" stroke="#fff" stroke-width="0.6"/>
+        <circle cx="50" cy="58" r="11" fill="#7ec06f"/>
+        <line x1="50" y1="88" x2="100" y2="38" stroke="#fff" stroke-width="0.7"/>
+        <line x1="50" y1="88" x2="0"  y2="38" stroke="#fff" stroke-width="0.7"/>
+        <polygon points="50,88 80,58 50,28 20,58" fill="none" stroke="#fff" stroke-width="0.9"/>
+        <circle cx="50" cy="62" r="3" fill="#c89860" stroke="#fff" stroke-width="0.3"/>
+        <rect id="bHOME" x="48" y="86" width="4" height="4" fill="#fff" stroke="#333" stroke-width="0.3"/>
+        <rect id="bB1" x="78" y="56" width="4" height="4" fill="#fff" stroke="#333" stroke-width="0.3"/>
+        <rect id="bB2" x="48" y="26" width="4" height="4" fill="#fff" stroke="#333" stroke-width="0.3"/>
+        <rect id="bB3" x="18" y="56" width="4" height="4" fill="#fff" stroke="#333" stroke-width="0.3"/>
+      </svg>
+      <div id="players"></div>
+      <div id="runners"></div>
+      <div id="batter"></div>
+      <div id="outmarks"></div>
+      <div class="ballwrap" id="ballwrap">
+        <svg class="ball-svg" viewBox="0 0 30 30">
+          <circle cx="15" cy="15" r="13" fill="#fff" stroke="#222" stroke-width="1.5"/>
+          <path d="M5,9 Q15,16 25,9" fill="none" stroke="#c00" stroke-width="1.4" stroke-dasharray="1.5,1.5"/>
+          <path d="M5,21 Q15,14 25,21" fill="none" stroke="#c00" stroke-width="1.4" stroke-dasharray="1.5,1.5"/>
+        </svg>
+        <div class="hint-arrow" id="hintArrow">ドラッグ!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📣 はんてい</h3>
+    <div class="result" id="result">--</div>
+    <h3 id="expTitle">💭 かいせつ</h3>
+    <div id="exp" class="qbox" style="font-size:13px">--</div>
+    <div id="nextBox" class="next-box" style="display:none">
+      <b id="nextTitle">🎓 つぎのレベルなら…</b>
+      <div id="nextText"></div>
+    </div>
+    <h3 style="margin-top:8px">📊 れんぞくせいかい</h3>
+    <div class="combo" id="combo">×0</div>
+    <h3 style="margin-top:10px">🏅 せいふくバッジ</h3>
+    <div class="small">よこ：うちかた／たて：ランナー</div>
+    <div class="badge-grid" id="badgeGrid"></div>
+  </div>
+</div>
+
+<div class="gameover" id="gameover">
+  <div class="gameover-box">
+    <h2>ゲームオーバー…</h2>
+    <p>もういちど ちょうせん する？</p>
+    <button onclick="continueGame()">▶ つづける</button>
+  </div>
+</div>
+
+<script>
+console.log("[守備ゲームv3.5] 起動");
+
+var field = document.getElementById('fieldwrap');
+var playersBox = document.getElementById('players');
+var runnersBox = document.getElementById('runners');
+var batterBox = document.getElementById('batter');
+var outBox = document.getElementById('outmarks');
+var ballwrap = document.getElementById('ballwrap');
+var hintArrow = document.getElementById('hintArrow');
+
+var players = {
+  P:[50,62,'p'], C:[50,90,'c'],
+  '1B':[78,58,'if'], '2B':[60,46,'if'], SS:[40,46,'if'], '3B':[22,58,'if'],
+  LF:[22,22,'of'], CF:[50,14,'of'], RF:[78,22,'of']
+};
+var originalPos = JSON.parse(JSON.stringify(players));
+Object.keys(players).forEach(function(k){
+  var v=players[k];
+  var d=document.createElement('div');
+  d.className='player '+v[2]; d.id='pl_'+k;
+  d.style.left=v[0]+'%'; d.style.top=v[1]+'%';
+  d.textContent=k; playersBox.appendChild(d);
+});
+var bases = {HOME:[50,88,'ホーム'],B1:[80,58,'いちるい'],B2:[50,28,'にるい'],B3:[20,58,'さんるい']};
+var runnerHomePos = {'1':[80,62],'2':[50,32],'3':[20,62]};
+var hits = {
+  '投手ゴロ':{pos:'P',easy:'ピッチャーゴロ',ground:true},
+  'ファーストゴロ':{pos:'1B',easy:'ファーストゴロ',ground:true},
+  'セカンドゴロ':{pos:'2B',easy:'セカンドゴロ',ground:true},
+  'サードゴロ':{pos:'3B',easy:'サードゴロ',ground:true},
+  'ショートゴロ':{pos:'SS',easy:'ショートゴロ',ground:true},
+  'レフト前ヒット':{pos:'LF',easy:'レフトまえヒット',ground:false},
+  'センター前ヒット':{pos:'CF',easy:'センターまえヒット',ground:false},
+  'ライト前ヒット':{pos:'RF',easy:'ライトまえヒット',ground:false}
+};
+var hitKeys = Object.keys(hits);
+var cases = {
+  'なし':{label:'ランナーなし',runners:[]},
+  '1':{label:'ランナー1るい',runners:['1']},
+  '2':{label:'ランナー2るい',runners:['2']},
+  '1_2':{label:'ランナー1・2るい',runners:['1','2']},
+  '3':{label:'ランナー3るい',runners:['3']},
+  '1_3':{label:'ランナー1・3るい',runners:['1','3']},
+  '2_3':{label:'ランナー2・3るい',runners:['2','3']},
+  '満塁':{label:'まんるい',runners:['1','2','3']}
+};
+var caseKeys = Object.keys(cases);
+
+// =========== LOW (1〜3年生) ===========
+function answerLogicLow(c,h){
+  var hit=hits[h];
+  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
+  if(hasR3){
+    return {base:'HOME',low:'3るいランナーが いるよ！ まず ホームに なげて 1てんを ふせごう！'};
+  }
+  if(hit.ground){
+    return {base:'B1',low:'ゴロは まず いちるい！ かくじつに 1アウトを とろう！'};
+  }
+  // outfield
+  if(c==='1' && h==='レフト前ヒット')
+    return {base:'B3',low:'1るいランナーが 3るいに いかない ように さんるいに なげよう！'};
+  if(c==='2')
+    return {base:'HOME',low:'2るいランナーが ホームに かえらない ように ホームへ！'};
+  return {base:'B2',low:'バッターを 2るいに させない ように にるいへ なげよう！'};
+}
+
+// =========== MID (4年生) ===========
+function answerLogicMid(c,h){
+  var hit=hits[h];
+  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
+  if(hasR3){
+    if(hit.ground){
+      if(c==='満塁') return {base:'HOME',low:'まんるいの ゴロは ホームで フォースアウト！ キャッチャーが ベースを ふめば アウト！'};
+      return {base:'HOME',low:'3るいランナーが ホームに かえって しまうよ。まず ホームに なげて 1てんを ふせごう！'};
+    }
+    return {base:'HOME',low:'ヒットでも 3るいランナーを かえさない ように ホームへ なげよう！'};
+  }
+  if(c==='1'){
+    if(h==='セカンドゴロ'||h==='ショートゴロ')
+      return {base:'B2',low:'ゲッツーの チャンス！ にるいで フォースアウト、そのあと いちるいに なげよう！'};
+    if(hit.ground) return {base:'B1',low:'まずは いちるいで かくじつに 1アウトを とろう！'};
+    if(h==='レフト前ヒット') return {base:'B3',low:'1るいランナーが 3るいまで いかない ように さんるいに なげよう！'};
+    return {base:'B2',low:'バッターを 2るいに させない ように にるいに なげよう！'};
+  }
+  if(c==='1_2'){
+    if(h==='サードゴロ'||h==='ショートゴロ')
+      return {base:'B3',low:'さんるいで フォースアウト！ いちばん さきの ランナーを アウトに しよう！'};
+    if(hit.ground) return {base:'B1',low:'まずは いちるいで かくじつに 1アウト！'};
+    return {base:'B3',low:'バッターより まず ランナーを とめよう！ さんるいに なげよう！'};
+  }
+  if(c==='2'){
+    if(hit.ground) return {base:'B1',low:'まずは いちるいで バッターを アウト！ 2るいランナーは すすんでも OK！'};
+    return {base:'HOME',low:'2るいランナーが ホームに かえらない ように ホームへ！'};
+  }
+  if(hit.ground) return {base:'B1',low:'まずは いちるいで アウト！'};
+  return {base:'B2',low:'バッターを 2るいに させない ように にるいへ！'};
+}
+
+// =========== HIGH (5・6年生) ===========
+function answerLogicHigh(c,h){
+  var hit=hits[h];
+  var hasR3=(c==='3'||c==='1_3'||c==='2_3'||c==='満塁');
+  if(hasR3){
+    if(hit.ground){
+      return {base:'HOME',low:'前進守備でバックホーム！フォースアウトかタッチプレーで1点を防ぐ。'};
+    }
+    return {base:'HOME',low:'外野→カットマン（中継）→本塁。バックホームで3塁ランナーをアウトに。'};
+  }
+  if(c==='1'){
+    if(h==='セカンドゴロ'||h==='ショートゴロ')
+      return {base:'B2',low:'4-6-3 / 6-4-3 のダブルプレー狙い。二塁手はベースを踏みながら一塁送球。'};
+    if(hit.ground) return {base:'B1',low:'1塁送球で確実に1アウト。サードゴロは状況で2塁送球も。'};
+    if(h==='レフト前ヒット') return {base:'B3',low:'バックサード。1塁ランナーの3塁進塁を阻止。中継はショート経由。'};
+    return {base:'B2',low:'打者走者を2塁で止める。中継プレーで判断を切り替える。'};
+  }
+  if(c==='1_2'){
+    if(h==='サードゴロ'||h==='ショートゴロ')
+      return {base:'B3',low:'5-3 / 6-5-3 のフォースアウト+1塁ゲッツー狙い。前のランナー優先。'};
+    if(hit.ground) return {base:'B1',low:'1-3 / 3-3 / 4-3 のゲッツー狙いも。ピッチャー前は本塁送球の選択も。'};
+    return {base:'HOME',low:'バックホームで2塁ランナーを刺す。中継プレーで他ランナーの進塁にも対応。'};
+  }
+  if(c==='2'){
+    if(hit.ground) return {base:'HOME',low:'内野前進守備ならバックホーム。中間守備なら1塁。チーム戦略で判断。'};
+    return {base:'HOME',low:'外野→カットマン→本塁。深い打球は本塁を諦めて打者を2塁で止める。'};
+  }
+  if(hit.ground) return {base:'B1',low:'1塁送球で確実に1アウト。'};
+  return {base:'B2',low:'中継プレーで打者を2塁で止める。深い打球は1塁返球。'};
+}
+
+// =========== NEXT-LEVEL commentary mapping ===========
+// always show the "次のレベル" tip
+function nextCommentary(mode,c,h){
+  if(mode==='low'){
+    // show mid-level reasoning
+    var m=answerLogicMid(c,h);
+    return {title:'⚾ 4年生になったら…', text:m.low};
+  }
+  if(mode==='mid'){
+    var hi=answerLogicHigh(c,h);
+    return {title:'🌟 5・6年生になったら…', text:hi.low};
+  }
+  // high → 中学・本格野球
+  return {title:'🏆 中学・本格野球なら…', text:'状況判断（点差・回・アウトカウント）と守備シフト（前進・中間・後ろ）を組み合わせ、複数の選択肢から最適解を選ぶ。チーム戦略・サイン・バッテリーとの連動も重要。'};
+}
+
+// =========== Mode management ===========
+var modeLabels = {low:'1〜3年生',mid:'4年生',high:'5・6年生'};
+var currentMode = localStorage.getItem('byb35_mode') || 'mid';
+
+function answerLogic(c,h){
+  if(currentMode==='low') return answerLogicLow(c,h);
+  if(currentMode==='high') return answerLogicHigh(c,h);
+  return answerLogicMid(c,h);
+}
+
+function setMode(m){
+  currentMode = m;
+  localStorage.setItem('byb35_mode',m);
+  document.getElementById('modeLabel').textContent = modeLabels[m];
+  ['low','mid','high'].forEach(function(k){
+    var b=document.getElementById('btn'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(b) b.classList.toggle('active', k===m);
+  });
+  loadStateForMode();
+  updateUI();
+  document.getElementById('qbox').textContent='モードを「'+modeLabels[m]+'」に かえたよ！ ▶ スタートを おしてね！';
+  document.getElementById('result').textContent='--';
+  document.getElementById('exp').textContent='--';
+  document.getElementById('nextBox').style.display='none';
+}
+
+// =========== State (per mode) ===========
+var score=0, combo=0, lives=3, cleared={};
+var currentCase=null, currentHit=null, currentAnswer=null, canDrag=false;
+
+function stateKey(){ return 'byb35_'+currentMode; }
+function loadStateForMode(){
+  var st={};
+  try{ st=JSON.parse(localStorage.getItem(stateKey())||'{}'); }catch(e){}
+  score = st.score||0;
+  cleared = st.cleared||{};
+  combo = 0;
+  lives = 3;
+}
+function saveState(){
+  try{ localStorage.setItem(stateKey(),JSON.stringify({score:score,cleared:cleared})); }catch(e){}
+}
+
+function rankInfo(s){
+  if(s>=3000) return {name:'ゴールデングラブ',stars:'★★★★★'};
+  if(s>=1500) return {name:'しゅびしょくにん',stars:'★★★★'};
+  if(s>=800)  return {name:'キャプテン',stars:'★★★'};
+  if(s>=300)  return {name:'レギュラー',stars:'★★'};
+  return {name:'みならい',stars:'★'};
+}
+function updateUI(){
+  document.getElementById('score').textContent=score;
+  var r=rankInfo(score);
+  document.getElementById('rank').textContent=r.name;
+  document.getElementById('stars').textContent=r.stars;
+  document.getElementById('badgeN').textContent=Object.keys(cleared).length;
+  document.getElementById('hearts').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);
+  document.getElementById('combo').textContent='×'+combo;
+  var grid=document.getElementById('badgeGrid');
+  grid.innerHTML='';
+  caseKeys.forEach(function(c){
+    hitKeys.forEach(function(h){
+      var d=document.createElement('div');
+      d.className='badge-cell'+(cleared[c+'|'+h]?' cleared':'');
+      d.title=cases[c].label+' × '+hits[h].easy;
+      d.textContent=cleared[c+'|'+h]?'⭐':'';
+      grid.appendChild(d);
+    });
+  });
+  // expTitle by mode
+  var t='💭 かいせつ';
+  if(currentMode==='low') t='💭 かいせつ（1〜3年生）';
+  if(currentMode==='mid') t='💭 かいせつ（4年生）';
+  if(currentMode==='high') t='💭 かいせつ（5・6年生）';
+  document.getElementById('expTitle').textContent=t;
+}
+function clearDynamics(){runnersBox.innerHTML='';outBox.innerHTML='';}
+function placeRunners(c){
+  clearDynamics();
+  cases[c].runners.forEach(function(r){
+    var p=runnerHomePos[r];
+    var d=document.createElement('div');
+    d.className='runner'; d.dataset.from=r;
+    d.style.left=p[0]+'%'; d.style.top=p[1]+'%';
+    d.textContent='🏃'; runnersBox.appendChild(d);
+  });
+}
+function placeBatter(){
+  batterBox.innerHTML='';
+  var d=document.createElement('div');
+  d.className='batter'; d.style.left='44%';d.style.top='92%';
+  d.textContent='🧑'; batterBox.appendChild(d);
+  var b=document.createElement('div');
+  b.className='batter'; b.style.left='40%';b.style.top='88%';
+  b.textContent='🏏'; batterBox.appendChild(b);
+}
+function removeGlow(){var ps=document.querySelectorAll('.player');for(var i=0;i<ps.length;i++)ps[i].classList.remove('glow');}
+function removeTarget(){var ps=document.querySelectorAll('rect');for(var i=0;i<ps.length;i++)ps[i].classList.remove('target-base');}
+function movePlayerTo(key,x,y){var el=document.getElementById('pl_'+key);el.style.left=x+'%';el.style.top=y+'%';}
+function resetPlayerPositions(){Object.keys(originalPos).forEach(function(k){var v=originalPos[k];movePlayerTo(k,v[0],v[1]);});}
+function arcAnimate(el,sx,sy,ex,ey,arc,dur,cb){
+  var steps=Math.max(20,Math.round(dur/16));
+  var midX=(sx+ex)/2, midY=Math.min(sy,ey)-arc;
+  var i=0;
+  function step(){
+    var t=i/steps;
+    var x=(1-t)*(1-t)*sx+2*(1-t)*t*midX+t*t*ex;
+    var y=(1-t)*(1-t)*sy+2*(1-t)*t*midY+t*t*ey;
+    el.style.left=x+'%'; el.style.top=y+'%';
+    i++;
+    if(i<=steps) requestAnimationFrame(step);
+    else if(cb) cb();
+  }
+  step();
+}
+function animateBallToFielder(targetPos,cb){
+  ballwrap.style.left='50%'; ballwrap.style.top='90%';
+  ballwrap.classList.add('pulse');
+  void ballwrap.offsetWidth;
+  arcAnimate(ballwrap,50,90,targetPos[0],targetPos[1],15,900,cb);
+}
+
+function nextQ(){
+  if(lives<=0){document.getElementById('gameover').classList.add('show');return;}
+  removeGlow();removeTarget();
+  resetPlayerPositions();
+  document.getElementById('result').textContent='--';
+  document.getElementById('exp').textContent='ボールが とどいたら ベースまで うごかしてね！';
+  document.getElementById('nextBox').style.display='none';
+  currentCase=caseKeys[Math.floor(Math.random()*caseKeys.length)];
+  currentHit=hitKeys[Math.floor(Math.random()*hitKeys.length)];
+  currentAnswer=answerLogic(currentCase,currentHit);
+  placeBatter(); placeRunners(currentCase);
+  var c=cases[currentCase].label, h=hits[currentHit].easy;
+  document.getElementById('qbox').innerHTML=
+    '<div>🏃 <b>'+c+'</b> だよ！</div>'+
+    '<div>⚾ <b>'+h+'</b> が きた！</div>'+
+    '<div>👉 どこに なげる？</div>';
+  canDrag=false; hintArrow.style.display='none';
+  var tk=hits[currentHit].pos;
+  var tp=[players[tk][0],players[tk][1]];
+  animateBallToFielder(tp,function(){
+    document.getElementById('pl_'+tk).classList.add('glow');
+    canDrag=true; hintArrow.style.display='block';
+  });
+}
+function replay(){
+  if(!currentHit){nextQ();return;}
+  removeGlow();
+  var tk=hits[currentHit].pos;
+  var tp=[players[tk][0],players[tk][1]];
+  canDrag=false;
+  animateBallToFielder(tp,function(){
+    document.getElementById('pl_'+tk).classList.add('glow');
+    canDrag=true;
+  });
+}
+function resetAll(){
+  if(!confirm('このモードの とくてんと バッジを けします。いい？'))return;
+  score=0;combo=0;lives=3;cleared={};
+  saveState();updateUI();
+  document.getElementById('qbox').textContent='「▶ スタート」を おしてね！';
+  document.getElementById('result').textContent='--';
+  document.getElementById('exp').textContent='--';
+  document.getElementById('nextBox').style.display='none';
+}
+function continueGame(){
+  lives=3;
+  document.getElementById('gameover').classList.remove('show');
+  updateUI();
+}
+
+var dragging=false;
+function getPct(clientX,clientY){
+  var r=field.getBoundingClientRect();
+  return [((clientX-r.left)/r.width)*100, ((clientY-r.top)/r.height)*100];
+}
+function onDown(e){if(!canDrag)return;dragging=true;hintArrow.style.display='none';e.preventDefault();}
+function onMove(e){
+  if(!dragging)return;
+  var cx,cy;
+  if(e.touches&&e.touches[0]){cx=e.touches[0].clientX;cy=e.touches[0].clientY;}
+  else{cx=e.clientX;cy=e.clientY;}
+  var p=getPct(cx,cy);
+  ballwrap.style.left=p[0]+'%'; ballwrap.style.top=p[1]+'%';
+}
+function onUp(e){
+  if(!dragging)return;
+  dragging=false;
+  var cx,cy;
+  if(e.changedTouches&&e.changedTouches[0]){cx=e.changedTouches[0].clientX;cy=e.changedTouches[0].clientY;}
+  else{cx=e.clientX;cy=e.clientY;}
+  var p=getPct(cx,cy);
+  var hit=null,minD=999;
+  for(var k in bases){
+    var v=bases[k];
+    var d=Math.hypot(p[0]-v[0],p[1]-v[1]);
+    if(d<minD){minD=d;hit=k;}
+  }
+  if(minD<18) judge(hit);
+}
+ballwrap.addEventListener('mousedown',function(e){onDown(e);});
+document.addEventListener('mousemove',onMove);
+document.addEventListener('mouseup',onUp);
+ballwrap.addEventListener('touchstart',function(e){onDown(e);},{passive:false});
+document.addEventListener('touchmove',function(e){if(dragging)e.preventDefault();onMove(e);},{passive:false});
+document.addEventListener('touchend',onUp);
+
+function showOut(x,y){
+  var d=document.createElement('div');
+  d.className='outmark';
+  d.style.left=x+'%';d.style.top=(y-6)+'%';
+  d.textContent='❌ アウト!';
+  outBox.appendChild(d);
+}
+function showRun(text,x,y,color){
+  var d=document.createElement('div');
+  d.className='outmark';
+  d.style.left=x+'%';d.style.top=y+'%';
+  if(color) d.style.color=color;
+  d.textContent=text;
+  outBox.appendChild(d);
+}
+function judge(baseKey){
+  removeGlow(); canDrag=false;
+  var tk=hits[currentHit].pos;
+  var fielderPos=[players[tk][0],players[tk][1]];
+  var basePos=bases[baseKey];
+  // show next-level commentary
+  var nx = nextCommentary(currentMode,currentCase,currentHit);
+  document.getElementById('nextBox').style.display='block';
+  document.getElementById('nextTitle').textContent=nx.title;
+  document.getElementById('nextText').textContent=nx.text;
+  if(baseKey===currentAnswer.base){
+    score+=100; combo++;
+    cleared[currentCase+'|'+currentHit]=true;
+    saveState();
+    document.getElementById('result').innerHTML='<span class="ok">〇 せいかい！</span>';
+    document.getElementById('exp').textContent='⭐ '+currentAnswer.low;
+    var tx=fielderPos[0]+(basePos[0]-fielderPos[0])*0.4;
+    var ty=fielderPos[1]+(basePos[1]-fielderPos[1])*0.4;
+    movePlayerTo(tk,tx,ty);
+    arcAnimate(ballwrap,fielderPos[0],fielderPos[1],basePos[0],basePos[1],10,700,function(){
+      var bel=document.getElementById('b'+baseKey);
+      bel.classList.add('base-flash');
+      setTimeout(function(){bel.classList.remove('base-flash');},1200);
+      showOut(basePos[0],basePos[1]);
+    });
+    updateUI();
+  } else {
+    combo=0; lives--;
+    document.getElementById('result').innerHTML='<span class="ng">× ざんねん…</span>';
+    var ansLabel=bases[currentAnswer.base][2];
+    document.getElementById('exp').textContent='せいかいは「'+ansLabel+'」だよ！ '+currentAnswer.low;
+    document.getElementById('b'+currentAnswer.base).classList.add('target-base');
+    var rs=document.querySelectorAll('.runner');
+    rs.forEach(function(r){
+      var from=r.dataset.from;
+      if(from==='3'){r.style.left='50%'; r.style.top='90%';
+        setTimeout(function(){showRun('しってん!',50,82,'#c62828');},1100);
+      } else if(from==='2'){r.style.left=runnerHomePos['3'][0]+'%';r.style.top=runnerHomePos['3'][1]+'%';
+      } else if(from==='1'){r.style.left=runnerHomePos['2'][0]+'%';r.style.top=runnerHomePos['2'][1]+'%';}
+    });
+    updateUI();
+    if(lives<=0){setTimeout(function(){document.getElementById('gameover').classList.add('show');},1200);}
+  }
+}
+
+document.getElementById('startBtn').addEventListener('click',nextQ);
+document.getElementById('replayBtn').addEventListener('click',replay);
+document.getElementById('resetBtn').addEventListener('click',resetAll);
+document.getElementById('btnLow').addEventListener('click',function(){setMode('low');});
+document.getElementById('btnMid').addEventListener('click',function(){setMode('mid');});
+document.getElementById('btnHigh').addEventListener('click',function(){setMode('high');});
+
+placeBatter();
+loadStateForMode();
+setMode(currentMode);
+updateUI();
+console.log("[v3.5] ready, mode=",currentMode);
+</script>
+</body>
+</html>
