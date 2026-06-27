@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>やきゅうクイズ 110もん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sora:#8ecae6;--sora-deep:#6cb6d6;--shiba:#5fb96a;--shiba-deep:#3f9b50;
+    --tsuchi:#e8a86a;--taiyo:#ffd23f;--shiro:#fffdf5;--nuime:#e84a3c;
+    --sumi:#3a2e26;--ki:#b5763e;--ki-deep:#8a5a2d;--ki-light:#d49a5e;--aoi:#2a7fb8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,sans-serif;color:var(--sumi);
+    background:
+      radial-gradient(circle at 82% 11%, rgba(255,210,63,.55) 0 58px, transparent 68px),
+      linear-gradient(180deg,var(--sora) 0%,var(--sora) 44%,#bfe3a8 45%,#bfe3a8 100%);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:14px 12px 24px;overflow-x:hidden;
+  }
+  .cloud{position:fixed;inset:0 0 auto 0;pointer-events:none;z-index:0;}
+  .cloud span{position:absolute;background:#fff;border-radius:40px;opacity:.85;}
+  .c1{width:90px;height:30px;top:26px;left:7%;}.c2{width:60px;height:22px;top:62px;left:24%;}.c3{width:70px;height:24px;top:42px;right:28%;}
+  .wrap{width:100%;max-width:540px;position:relative;z-index:2;}
+  h1.title{font-family:"Mochiy Pop One",sans-serif;text-align:center;color:var(--shiro);
+    font-size:clamp(22px,6.4vw,32px);line-height:1.3;text-shadow:0 3px 0 var(--ki-deep),0 0 8px rgba(0,0,0,.12);margin-bottom:10px;}
+  .stage{background:linear-gradient(160deg,var(--ki-light),var(--ki) 55%,var(--ki-deep));border-radius:22px;padding:14px;position:relative;
+    box-shadow:0 12px 0 var(--ki-deep),0 20px 30px rgba(0,0,0,.22);}
+  .stage::before,.stage::after{content:"";position:absolute;width:13px;height:13px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#f0c98a,#7a4f24);top:11px;}
+  .stage::before{left:11px;}.stage::after{right:11px;}
+  .plaque{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:var(--nuime);color:#fff;
+    font-family:"Mochiy Pop One",sans-serif;font-size:12px;padding:5px 16px;border-radius:20px;white-space:nowrap;box-shadow:0 4px 0 #b23629;z-index:5;}
+  .screen{background:var(--shiro);border-radius:14px;border:4px solid #fff;overflow:hidden;
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.08);padding:18px 16px 18px;min-height:330px;display:flex;flex-direction:column;}
+  .home-mascot{width:150px;margin:2px auto 4px;}
+  .home-lead{text-align:center;font-weight:700;font-size:16px;line-height:1.6;margin-bottom:14px;}
+  .levels{display:flex;flex-direction:column;gap:11px;}
+  .lvl{font-family:"Zen Maru Gothic",sans-serif;cursor:pointer;border:none;border-radius:16px;padding:14px 16px;text-align:left;
+    color:#fff;display:flex;align-items:center;gap:13px;transition:transform .08s;box-shadow:0 5px 0 rgba(0,0,0,.18);}
+  .lvl:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18);}
+  .lvl .ic{font-size:26px;flex:0 0 auto;}
+  .lvl .tx{display:flex;flex-direction:column;}
+  .lvl .tx b{font-family:"Mochiy Pop One",sans-serif;font-size:17px;}
+  .lvl .tx small{font-size:12px;opacity:.92;}
+  .lvl.l1{background:var(--shiba);box-shadow:0 5px 0 var(--shiba-deep);}
+  .lvl.l2{background:#e89b3a;box-shadow:0 5px 0 #c47c1e;}
+  .lvl.l3{background:var(--nuime);box-shadow:0 5px 0 #b23629;}
+  .lvl.l4{background:#6b4ea8;box-shadow:0 5px 0 #4a3380;}
+  .lvl .best{margin-left:auto;font-family:"Mochiy Pop One",sans-serif;font-size:11px;background:rgba(255,255,255,.25);padding:4px 8px;border-radius:10px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .qnum{font-family:"Mochiy Pop One",sans-serif;font-size:13px;color:var(--aoi);}
+  .score-pill{font-family:"Mochiy Pop One",sans-serif;font-size:13px;background:var(--taiyo);padding:4px 11px;border-radius:12px;}
+  .pbar{height:9px;background:#e7ddca;border-radius:6px;overflow:hidden;margin-bottom:16px;}
+  .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--shiba),var(--shiba-deep));border-radius:6px;transition:width .3s;}
+  .qtext{font-size:clamp(16px,4.6vw,20px);font-weight:900;line-height:1.6;margin-bottom:14px;}
+  .qtext .qm{color:var(--nuime);}
+  .choices{display:flex;flex-direction:column;gap:9px;}
+  .choice{font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:clamp(14px,4vw,17px);background:#fff;border:3px solid var(--sora-deep);
+    color:var(--sumi);border-radius:14px;padding:12px 14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;
+    transition:transform .08s,background .15s,border-color .15s;}
+  .choice .mk{flex:0 0 26px;height:26px;border-radius:50%;background:var(--sora-deep);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-family:"Mochiy Pop One",sans-serif;font-size:13px;}
+  .choice:active{transform:scale(.97);}
+  .choice.correct{background:#d6f5d6;border-color:var(--shiba-deep);}
+  .choice.correct .mk{background:var(--shiba-deep);}
+  .choice.wrong{background:#ffe0dc;border-color:var(--nuime);}
+  .choice.wrong .mk{background:var(--nuime);}
+  .choice.locked{cursor:default;}
+  .choice.locked:not(.correct):not(.wrong){opacity:.55;}
+  .feedback{margin-top:14px;border-radius:14px;padding:12px 14px;font-weight:700;font-size:clamp(14px,3.9vw,16px);line-height:1.65;display:none;}
+  .feedback.show{display:block;animation:pop .3s ease;}
+  .feedback.good{background:#e3f8e3;border:3px solid var(--shiba-deep);}
+  .feedback.bad{background:#fff0ee;border:3px solid var(--nuime);}
+  .feedback .head{font-family:"Mochiy Pop One",sans-serif;font-size:15px;display:block;margin-bottom:4px;}
+  .feedback.good .head{color:var(--shiba-deep);}
+  .feedback.bad .head{color:var(--nuime);}
+  .term{margin-top:10px;background:rgba(255,255,255,.7);border:2px dashed var(--ki-light);border-radius:11px;
+    padding:9px 11px;font-size:clamp(13px,3.6vw,15px);font-weight:500;line-height:1.55;}
+  .term .tl{display:inline-block;font-family:"Mochiy Pop One",sans-serif;font-size:11px;background:var(--ki);color:#fff;
+    padding:2px 9px;border-radius:9px;margin-right:6px;vertical-align:middle;}
+  .term b{color:var(--ki-deep);}
+  @keyframes pop{0%{transform:scale(.92);opacity:0;}100%{transform:scale(1);opacity:1;}}
+  .qfoot{margin-top:auto;padding-top:14px;display:flex;gap:10px;}
+  .btn{font-family:"Mochiy Pop One",sans-serif;font-size:15px;border:none;cursor:pointer;border-radius:16px;padding:13px 18px;color:#fff;
+    transition:transform .08s;box-shadow:0 5px 0 rgba(0,0,0,.18);flex:1;}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18);}
+  .btn-next{background:var(--shiba);box-shadow:0 5px 0 var(--shiba-deep);}
+  .btn-quit{background:#9aa7b0;box-shadow:0 5px 0 #6f7c85;flex:0 0 auto;padding:13px 16px;}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .btn:disabled:active{transform:none;}
+  .res{text-align:center;display:flex;flex-direction:column;align-items:center;}
+  .res-mascot{width:140px;margin:4px auto 6px;}
+  .res-head{font-family:"Mochiy Pop One",sans-serif;font-size:20px;color:var(--nuime);margin-bottom:4px;}
+  .res-score{font-family:"Mochiy Pop One",sans-serif;font-size:40px;line-height:1.1;margin:6px 0;}
+  .res-score small{font-size:18px;color:#8a7a68;}
+  .res-msg{font-weight:700;font-size:15px;line-height:1.6;margin:6px 0 16px;}
+  .stars{font-size:30px;letter-spacing:4px;margin:2px 0 8px;}
+  .res-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;}
+  .btn-retry{background:var(--nuime);box-shadow:0 5px 0 #b23629;}
+  .btn-home{background:var(--aoi);box-shadow:0 5px 0 #1d5d8a;}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="cloud"><span class="c1"></span><span class="c2"></span><span class="c3"></span></div>
+<div class="wrap">
+  <h1 class="title">⚾ やきゅうクイズ 110もん</h1>
+  <div class="stage">
+    <div class="plaque" id="plaque">レベルを えらんでね</div>
+    <div class="screen" id="screen"></div>
+  </div>
+</div>
+
+<script>
+function mascot(face="happy"){
+  const eyes=`<circle cx="84" cy="98" r="8" fill="#3a2e26"/><circle cx="116" cy="98" r="8" fill="#3a2e26"/>
+    <circle cx="87" cy="95" r="2.5" fill="#fff"/><circle cx="119" cy="95" r="2.5" fill="#fff"/>`;
+  let mouth;
+  if(face==="happy") mouth=`<path d="M86,118 q14,16 28,0" stroke="#3a2e26" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  else if(face==="cheer") mouth=`<path d="M84,114 q16,22 32,0 z" fill="#e84a3c" stroke="#3a2e26" stroke-width="3"/>`;
+  else mouth=`<path d="M88,122 q12,-6 24,0" stroke="#3a2e26" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="178" rx="55" ry="10" fill="rgba(0,0,0,.12)"/>
+    <circle cx="100" cy="100" r="62" fill="#fffdf5" stroke="#e0d8c4" stroke-width="3"/>
+    <path d="M55,72 q12,28 0,56 M145,72 q-12,28 0,56" stroke="#e84a3c" stroke-width="4" fill="none"/>
+    <path d="M58,80 l-7,-4 M58,92 l-8,-2 M58,104 l-8,1 M142,80 l7,-4 M142,92 l8,-2 M142,104 l8,1" stroke="#e84a3c" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M52,64 a48,40 0 0 1 96,0 l14,-4 -8,16 z" fill="#2a7fb8"/>
+    <ellipse cx="100" cy="60" rx="40" ry="14" fill="#2a7fb8"/><circle cx="100" cy="66" r="5" fill="#fff"/>
+    ${eyes}${mouth}
+    <circle cx="70" cy="112" r="7" fill="#ffb0b0" opacity=".55"/><circle cx="130" cy="112" r="7" fill="#ffb0b0" opacity=".55"/>
+    <circle cx="158" cy="120" r="20" fill="#a9742f" stroke="#6e4a1c" stroke-width="3"/>
+    <path d="M150,112 l16,16 M166,112 l-16,16" stroke="#6e4a1c" stroke-width="2"/>
+  </svg>`;
+}
+
+const DATA={
+ shokyu:{name:"しょきゅうへん",icon:"🟢",color:"l1",q:[
+  {q:"やきゅうは 1チーム 何人で まもる？",c:["6人","9人","11人"],a:1,e:"ピッチャーから 外野まで あわせて 9人だよ。",t:"しゅび(守備)",td:"ボールを とって アウトを とる がわの チーム。"},
+  {q:"バッターが アウトに なるのは ストライク 何回？",c:["2回","3回","4回"],a:1,e:"ストライク 3つで「さんしん」＝アウト！",t:"さんしん(三振)",td:"ストライク3つで バッターが アウトに なること。"},
+  {q:"フォアボールは ボールが 何回？",c:["3回","4回","5回"],a:1,e:"ボール 4つで 1るいに あるいて 行けるよ。",t:"フォアボール(四球)",td:"ボール4つで 1るいへ あるいて 行けること。"},
+  {q:"ランナーが いちばん さいしょに めざす ベースは？",c:["1るい","2るい","3るい"],a:0,e:"1るい→2るい→3るい→ホーム の じゅんばん！",t:"るい(塁・ベース)",td:"ランナーが ふむ 4つの 目じるし。"},
+  {q:"ホームベースを ふんで かえると 入るのは？",c:["1てん","アウト","ストライク"],a:0,e:"ぐるっと まわって ホームに かえると 1てん！",t:"とくてん(得点)",td:"ホームに かえって くると 入る てん。"},
+  {q:"ベースは ぜんぶで いくつ？（ホームも 入れて）",c:["3つ","4つ","5つ"],a:1,e:"1るい・2るい・3るい・ホームの 4つ。",t:"ダイヤモンド",td:"1〜3るいと ホームを むすぶ しかくい かたち。"},
+  {q:"バットで ボールを うつ 人は？",c:["バッター","ピッチャー","しんぱん"],a:0,e:"うつ人＝バッター（だしゃ）だよ。",t:"バッター(打者)",td:"バットで ボールを うつ 人。"},
+  {q:"ボールを なげる 人は？",c:["キャッチャー","ピッチャー","ファースト"],a:1,e:"マウンドから なげる人＝ピッチャー。",t:"ピッチャー(投手)",td:"マウンドから ボールを なげる 人。"},
+  {q:"こうげきは アウト いくつで こうたい？",c:["2つ","3つ","4つ"],a:1,e:"3アウトで まもりと こうげきが チェンジ！",t:"アウト",td:"こうげきがわが しっぱいして たまる もの。3つで こうたい。"},
+  {q:"バットを ふって 当たらなかったら？",c:["ボール","ストライク","ヒット"],a:1,e:"からぶりは ストライクに なるよ。",t:"ストライク",td:"いいコース、または からぶり・ファウルで たまる はんてい。"},
+  {q:"うった ボールが ラインの そとへ いったら？",c:["ホームラン","ファウル","セーフ"],a:1,e:"そとがわは ファウル。やりなおしだよ。",t:"ファウル",td:"ラインの そとへ いった だきゅう。"},
+  {q:"ランナーが ベースに さきに ついたら？",c:["アウト","セーフ","ファウル"],a:1,e:"セーフ！ ベースに のこれるよ。",t:"セーフ",td:"ランナーが ぶじ ベースに のこれる はんてい。"},
+  {q:"うった ボールを ノーバウンドで とられたら？",c:["アウト","セーフ","1てん"],a:0,e:"フライを 直せつ とられたら アウト。",t:"フライ",td:"たかく あがった だきゅう。ノーバウンドで とられると アウト。"},
+  {q:"ボールを とおくへ うって 一気に ホームまで かえると？",c:["バント","ホームラン","ファウル"],a:1,e:"スタンドに 入る 大きな あたり＝ホームラン！",t:"ホームラン",td:"スタンドまで とどく あたり。一気に ホームへ かえれる。"},
+  {q:"まもりと こうげきが 入れかわる ことを？",c:["タイム","チェンジ","アウト"],a:1,e:"3アウトで チェンジ（こうたい）するよ。",t:"チェンジ(交代)",td:"3アウトで こうげきと しゅびが 入れかわること。"},
+  {q:"キャッチャーの ポジション番号は？",c:["1ばん","2ばん","3ばん"],a:1,e:"ピッチャーが 1、キャッチャーが 2だよ。",t:"ポジション番号",td:"スコアで つかう 番号。ピッチャー1・キャッチャー2…。"},
+  {q:"ピッチャーの ポジション番号は？",c:["1ばん","4ばん","9ばん"],a:0,e:"スコアでは ピッチャーが 1ばん。",t:"ポジション番号",td:"スコアで つかう 番号。ピッチャーは いつも 1ばん。"},
+  {q:"内野（うちのほう）を まもる人は 何人？",c:["3人","4人","5人"],a:1,e:"ファースト・セカンド・サード・ショートの 4人。",t:"ないやしゅ(内野手)",td:"1・2・3るいと ショートを まもる 4人。"},
+  {q:"外野（そとのほう）を まもる人は 何人？",c:["2人","3人","4人"],a:1,e:"レフト・センター・ライトの 3人。",t:"がいやしゅ(外野手)",td:"レフト・センター・ライトの 3人。"},
+  {q:"ボールが 体に 当たって 1るいへ 行けるのは？",c:["ホームラン","デッドボール","バント"],a:1,e:"デッドボール（しきゅう）。1るいへ 行けるよ。",t:"デッドボール(死球)",td:"投球が 体に 当たって 1るいへ 行けること。"},
+  {q:"いいコースに 入った ボールは？",c:["ボール","ストライク","ファウル"],a:1,e:"ストライクゾーンに 入れば ストライク。",t:"ストライクゾーン",td:"バッターの まわりの いい コースの はんい。"},
+  {q:"グローブを 使うのは どっちのチーム？",c:["こうげき","しゅび"],a:1,e:"まもるチームが グローブを 使うよ。",t:"しゅび(守備)",td:"グローブで まもる がわの チーム。"},
+  {q:"バットを 使うのは どっちのチーム？",c:["こうげき","しゅび"],a:0,e:"うつ番＝こうげきチームが バットを 使う。",t:"こうげき(攻撃)",td:"バットで うつ がわの チーム。"},
+  {q:"1るいを まもる人を 何という？",c:["ファースト","ショート","キャッチャー"],a:0,e:"1るいを まもる人＝ファースト。",t:"ファースト(一塁手)",td:"1るいを まもる せんしゅ。"},
+  {q:"ボールや ストライクを 判定する人は？",c:["かんとく","しんぱん","バッター"],a:1,e:"しんぱん（アンパイア）が きめるよ。",t:"しんぱん(審判)",td:"アウト・セーフなどを きめる 人。"},
+  {q:"うった あと バッターは どっちへ 走る？",c:["3るいがわ","1るいがわ"],a:1,e:"まずは 1るいへ ぜんりょく！",t:"そうるい(走塁)",td:"ベースを めざして 走ること。"},
+  {q:"てんが 多いほうが？",c:["まけ","かち","ひきわけ"],a:1,e:"てんが 多いチームの かち！",t:"しょうはい(勝敗)",td:"てんの 多い ほうが かち。"},
+  {q:"ピッチャーが 立つ もりあがった 場しょは？",c:["ベンチ","マウンド","ベース"],a:1,e:"まん中の もりあがり＝マウンド。",t:"マウンド",td:"ピッチャーが 立つ もりあがった 場しょ。"},
+  {q:"打つ番が 1人ずつ まわる じゅんを？",c:["だじゅん","しゅび","タイム"],a:0,e:"だじゅん（うつ じゅんばん）どおり まわるよ。",t:"だじゅん(打順)",td:"バッターが うつ じゅんばん。9人で 1しゅう。"},
+  {q:"ボールを とるための かわの どうぐは？",c:["バット","グローブ","ヘルメット"],a:1,e:"グローブ（グラブ）で ボールを とるよ。",t:"グローブ",td:"ボールを とる かわの どうぐ。"},
+ ]},
+ chukyu:{name:"ちゅうきゅうへん",icon:"🟠",color:"l2",q:[
+  {q:"1るいに ランナー。ゴロを うった！ 1るいランナーは？",c:["うごかなくて いい","かならず 2るいへ すすむ"],a:1,e:"うしろから バッターが くるので フォース＝かならず すすむ。",t:"フォースプレー",td:"走者が かならず すすむ とき、ベースを ふむだけで とれる アウト。"},
+  {q:"フォースの とき、まもりは どうすれば アウト？",c:["ベースを ふむだけ","かならず タッチ"],a:0,e:"フォースは ベースを ふむだけで アウトに できる！",t:"フォースアウト",td:"フォースの 走者を ベースを ふんで とる アウト。"},
+  {q:"すすまなくても いい ランナーを アウトに するには？",c:["ベースを ふむ","体に タッチ"],a:1,e:"タッチアウト。体に ボールを つけよう。",t:"タッチアウト",td:"走者の 体に ボールを つけて とる アウト。"},
+  {q:"フライを とられた あと、ランナーが すすむには？",c:["とった あとに 出る","とる前に 出る"],a:0,e:"タッチアップ。捕った しゅんかんの あとに スタート！",t:"タッチアップ",td:"フライが 捕られた あとに 塁を 出て すすむ プレー。"},
+  {q:"ストライク2・ボール3で つぎが ボールなら？",c:["さんしん","フォアボールで 出るい"],a:1,e:"ボール4つめ＝フォアボールで 1るいへ。",t:"しゅつるい(出塁)",td:"ヒットや 四球などで ランナーに なること。"},
+  {q:"ランナー なし。内野ゴロを とったら まず どこへ?",c:["1るい","3るい"],a:0,e:"バッターを アウトに するため 1るいへ なげる。",t:"そうきゅう(送球)",td:"ボールを なかまに なげて わたすこと。"},
+  {q:"ランナー1・2るいで ゴロ。いちばん さきの ベースは？",c:["2るい","3るい"],a:1,e:"いちばん前の ランナーが すすむ 3るいが さき。",t:"フォースの じゅん",td:"いちばん 前の 走者ほど さきの ベースへ すすむ。"},
+  {q:"バントとは？",c:["フルスイング","バットに 当てて ころがす"],a:1,e:"そっと 当てて ちかくに ころがす こうげき。",t:"バント",td:"バットに 当てて ちかくに ころがす こうげき。"},
+  {q:"とうるい（盗塁）とは？",c:["なげる間に つぎの塁へ 走る","ホームランを うつ"],a:0,e:"ピッチャーが なげる すきに つぎの ベースへ！",t:"とうるい(盗塁)",td:"投球の すきに つぎの 塁へ 走ること。"},
+  {q:"1回の プレーで 2人 アウトに するのを？",c:["ゲッツー（ダブルプレー）","タッチアップ"],a:0,e:"ダブルプレー（ゲッツー）。守りの 大きな ぶき！",t:"ダブルプレー",td:"1つの プレーで 2人を アウトに すること。"},
+  {q:"だじゅんは 何人で 1しゅう する？",c:["9人","11人"],a:0,e:"9人 まわると また 1ばんに もどるよ。",t:"だじゅん(打順)",td:"バッターが うつ じゅんばん。9人で 1しゅう。"},
+  {q:"2るいまで すすめる あたりを?",c:["シングル","ツーベース"],a:1,e:"2るいまで 行く ヒット＝ツーベースヒット。",t:"にるいだ(二塁打)",td:"1回で 2るいまで すすめる ヒット。"},
+  {q:"1るいで 止まる ヒットを?",c:["シングルヒット","ホームラン"],a:0,e:"1るいまでの あたり＝シングル（たんだ）。",t:"たんだ(単打)",td:"1るいで 止まる ヒット。"},
+  {q:"プレーを いったん 止めたい とき コーチが かけるのは?",c:["タイム","ストライク"],a:0,e:"「タイム!」で プレーを 止められるよ。",t:"タイム",td:"プレーを いったん 止める あいず。"},
+  {q:"まんるいで フォアボールに なると?",c:["なにも おきない","おしだしで 1てん"],a:1,e:"3るいランナーが おされて ホームへ。おしだし 1てん！",t:"おしだし(押し出し)",td:"まんるいで 四死球などに なり 走者が おされて 1てん。"},
+  {q:"内野フライ、ランナーが すすむ ために 大事なのは?",c:["とられたら すぐ もどる じゅんび","なにも しない"],a:0,e:"とられたら フォースで もどされる ことも。よく 見て!",t:"リタッチ",td:"フライが 捕られたら いったん 塁に もどる ぎむ。"},
+  {q:"「カバーリング」とは?",c:["ほかの 人を たすける 位置に うごく","バットを ふる"],a:0,e:"ミスに そなえて なかまの うしろを まもること。",t:"カバーリング",td:"ミスに そなえ なかまの うしろを まもる うごき。"},
+  {q:"2アウトで フライを とられたら こうげきは?",c:["まだ つづく","こうたい（チェンジ）"],a:1,e:"3アウトめ なので こうたい！",t:"チェンジ",td:"3アウトで こうげきと しゅびが 入れかわること。"},
+  {q:"てんが おなじまま 終われない とき つづけるのを?",c:["えんちょう","タイム"],a:0,e:"かちまけが つくまで えんちょうで つづける ことが あるよ。",t:"えんちょう(延長)",td:"同点の とき かちまけが つくまで つづけること。"},
+  {q:"ランナーを はさんで おいかける プレーを?",c:["ランダウン（はさみ）","バント"],a:0,e:"前後で はさんで タッチを ねらう プレー。",t:"ランダウン(はさみ)",td:"走者を 前後で はさんで タッチを ねらう プレー。"},
+ ]},
+ jokyu:{name:"じょうきゅうへん",icon:"🔴",color:"l3",q:[
+  {q:"インフィールドフライとは?",c:["内野に 上がった とりやすい フライで 打者が アウト","外野ホームラン"],a:0,e:"ノーアウト/1アウトで 1・2るい(か まんるい)、内野フライは 打者アウト宣告。走者を まもる ルールだよ。",t:"インフィールドフライ",td:"特定の 場面で 内野フライを 打者アウトに する ルール。走者の 不利を ふせぐ。"},
+  {q:"ふりにげ が できるのは?",c:["いつでも","1るいが あいている か 2アウトの とき"],a:1,e:"第3ストライクを 捕手が 捕れない とき、じょうけんが あえば 走れる。",t:"ふりにげ(振り逃げ)",td:"第3ストライクを 捕手が 捕れない とき 打者が 1るいへ 走れる ルール。"},
+  {q:"ボーク（balk）とは?",c:["ピッチャーの はんそく動作","ホームラン"],a:0,e:"走者が いる時の 投手の 反則。走者が 1つ すすむ。",t:"ボーク",td:"走者が いる時の 投手の 反則動作。走者が 1つ 進塁する。"},
+  {q:"タッチアップの 正しい タイミングは?",c:["野手が 捕った しゅんかん の あと","捕る前に スタート"],a:0,e:"捕球より前に 離れると もどされる。捕った あとに 出よう。",t:"タッチアップ(リタッチ)",td:"飛球が 捕られた あとに 塁を 出て すすむ プレー。"},
+  {q:"アピールプレーとは?",c:["塁の ふみ忘れなどを 守備が 指てきして アウト","かんとくの こうぎ"],a:0,e:"ベースの 踏み忘れなどを 守備が 知らせて アウトに する プレー。",t:"アピールプレー",td:"塁の 踏み忘れなどを 守備が 指てきして とる アウト。"},
+  {q:"けん制球とは?",c:["ランナーを 戻すため ベースへ なげる","バッターへ 速く なげる"],a:0,e:"リードした ランナーを アウト/牽制する ための 送球。",t:"けんせいきゅう(牽制球)",td:"走者を 戻したり 盗塁を ふせぐ ため ベースへ なげる 送球。"},
+  {q:"けいえん（こい四球）とは?",c:["わざと フォアボールで あるかせる","三振を ねらう"],a:0,e:"強い バッターを わざと 歩かせる さくせん。",t:"けいえん(敬遠)",td:"わざと 四球に して 強い 打者を あるかせる さくせん。"},
+  {q:"打球が ワンバウンドで スタンドに 入ったら?",c:["ホームラン","2つ すすむ(エンタイトルツーベース)"],a:1,e:"バウンドして 入った あたりは 2個 進塁の ルール。",t:"エンタイトルツーベース",td:"ワンバウンドで スタンドに 入った だきゅう。走者は 2個 進塁。"},
+  {q:"インプレーと ボールデッドの ちがいは?",c:["インプレーは プレー中、デッドは 止まっている","おなじ いみ"],a:0,e:"ファウルや デッドボールで ボールデッド＝プレー停止に なる。",t:"ボールデッド",td:"プレーが 止まっている じょうたい。走者は すすめない。"},
+  {q:"スクイズとは?",c:["バントで 3るいランナーを ホームへ かえす","盗塁の こと"],a:0,e:"バントを 使って ランナーを ホームに かえす こうげき。",t:"スクイズ",td:"バントで 3るい走者を ホームに かえす こうげき。"},
+  {q:"ふりにげで 打者が 走った！ 捕手は どうすれば アウト?",c:["1るいへ 送球するか 打者に タッチ","ベンチへ 走る"],a:0,e:"打者は まだ アウトに なって いないので、1るいで フォース、または タッチで とる。",t:"ふりにげの 守り",td:"第3ストライクが こぼれたら 1るいへ 送球か 打者に タッチで アウトに する。"},
+  {q:"1・3るいで 2人が 同時に 走るのを?",c:["ダブルスチール(重盗)","スクイズ"],a:0,e:"2人 いっしょに 盗塁する さくせん。",t:"ダブルスチール(重盗)",td:"走者2人が 同時に 盗塁する こうげき。"},
+  {q:"走者が スタートし、バッターは かならず 打つ さくせんは?",c:["ヒットエンドラン","バント"],a:0,e:"走者を 走らせ、打者は ボールに バットを 当てに いく。",t:"ヒットエンドラン",td:"走者の スタートと 打者の 打撃を 組み合わせる こうげき。"},
+  {q:"こうげきがわが 守備を じゃました! はんていは?",c:["守備妨害で アウト","セーフ"],a:0,e:"わざと 守備の じゃまを すると アウトに なる。",t:"しゅびぼうがい(インターフェア)",td:"攻撃側が 守備を 妨げる 反則。打者や 走者が アウトに なる。"},
+  {q:"守備が 走者の 通り道を じゃました! どうなる?",c:["走塁妨害で 進塁が みとめられる","アウト"],a:0,e:"守りが じゃますると 走者は すすめる。",t:"そうるいぼうがい(オブストラクション)",td:"守備が 走者の 進路を 妨げる 反則。進塁が みとめられる。"},
+  {q:"野手が ボールを かくして 走者に タッチ、これは?",c:["かくし球(ゆるされる)","はんそく"],a:0,e:"ルール上 みとめられる さくせん。投手が マウンドに 乗ると ボークに なるので ちゅうい。",t:"かくし球",td:"ボールを 持って いないふりで 走者に タッチする さくせん。"},
+  {q:"フェアの 打球が 走者に 当たった(野手が さわる前)! 原則は?",c:["走者が アウト","ファウル"],a:0,e:"野手が さわる前に 当たると、ふつう 走者の アウト。",t:"だきゅう接触",td:"打球が 走者に 当たると 原則 走者アウトに なる。"},
+  {q:"打球が ライン上に 止まった! フェア? ファウル?",c:["フェア","ファウル"],a:0,e:"ライン上は フェアゾーン。フェアだよ。",t:"フェアライン",td:"ライン そのものも フェアの はんいに 入る。"},
+  {q:"バットを かすめて 捕手が 直せつ 捕った! これは?",c:["ファウルチップ＝ストライク(プレー続行)","ファウル"],a:0,e:"捕手の ミットに 直接 入れば ストライク、インプレーの まま。",t:"ファウルチップ",td:"バットを かすめ 捕手が じかに 捕る ストライク。プレーは つづく。"},
+  {q:"内野手が ゲッツー ねらいで わざと フライを 落とした! はんていは?",c:["故意落球で 打者アウト","セーフ"],a:0,e:"ずるい ダブルプレーを ふせぐ ため 打者は アウトに なる。",t:"こいらっきゅう(故意落球)",td:"わざと 捕球を 落とす プレー。打者は アウトに なる。"},
+  {q:"延長を 早く 決めるため 走者を 置いて 始めるのは?",c:["タイブレーク","コールド"],a:0,e:"走者を 置いた じょうたいで イニングを 始める ルール。",t:"タイブレーク",td:"延長で 走者を 置いて 始め、決着を つけやすく する しくみ。"},
+  {q:"大きな 点差や 天気で 途中で 終わるのは?",c:["コールドゲーム","延長"],a:0,e:"きまりに よって 試合が 途中で 終わること。",t:"コールドゲーム",td:"点差や 天候で 規定により 途中終了する 試合。"},
+  {q:"投手の かわりに 打つ 専門の 打者を?",c:["指名打者(DH)","代走"],a:0,e:"投手は 打たず、DHが 打席に 立つ せいど。",t:"しめいだしゃ(DH)",td:"投手の かわりに 打つ 専門の 選手。"},
+  {q:"打者を 交代させて 打たせるのを?",c:["代打(ピンチヒッター)","代走"],a:0,e:"その 打席だけ 別の 選手に 打たせる。",t:"だいだ(代打)",td:"打者を 交代して 打たせる こと。元の 選手は もう 出られない。"},
+  {q:"走者を 交代させて 走らせるのを?",c:["代走(ピンチランナー)","代打"],a:0,e:"足の 速い 選手などに 走らせる 交代。",t:"だいそう(代走)",td:"走者を 交代して 走らせる こと。"},
+  {q:"投球が 大きく それて 走者が すすんだ! これは?",c:["暴投(ワイルドピッチ)","捕逸"],a:0,e:"投手の せきにんで 投球が それた もの。",t:"ぼうとう(ワイルドピッチ)",td:"投手の 投球が それて 走者が すすむ こと。"},
+  {q:"ふつうに 捕れる 球を 捕手が そらして 走者が すすんだ! これは?",c:["捕逸(パスボール)","暴投"],a:0,e:"捕手の せきにんで 後ろへ そらした もの。",t:"ほいつ(パスボール)",td:"捕手が 捕れず 後ろへ そらして 走者が すすむ こと。"},
+  {q:"走者が いる時、静止してから 投げる 投げ方は?",c:["セットポジション","ワインドアップ"],a:0,e:"いったん 止まってから 投げる。盗塁を ふせぎやすい。",t:"セットポジション",td:"走者が いる時に 静止してから 投げる フォーム。"},
+  {q:"内野ゴロでも 足が 速くて 1るいセーフ! これは?",c:["内野安打(ヒット)","エラー"],a:0,e:"守備の ミスでなく 足で かせいだ ヒット。",t:"ないやあんだ(内野安打)",td:"内野ゴロを 足の 速さで セーフに した ヒット。"},
+  {q:"フライの あと 3るい走者が タッチアップで 1てん! 打者の 記録は?",c:["記録上アウトだが 打点が つく","ヒット"],a:0,e:"打者は アウト扱いだが チームに 1てんを もたらす。",t:"ぎせいフライ(犠飛)",td:"フライで 走者を かえし、打者は アウトだが 打点が つく プレー。"},
+ ]},
+ chojokyu:{name:"ちょうじょうきゅうへん",icon:"👑",color:"l4",q:[
+  {q:"インフィールドフライが 宣告された あと、その 打球が ファウルに なった! どうなる?",c:["ただの ファウル（宣告は とり消し）","打者は そのまま アウト"],a:0,e:"フェアに ならなければ インフィールドフライは 成立せず、ふつうの ファウルに なる。",t:"インフィールドフライの 取消",td:"宣告後でも 打球が ファウルに なれば 成立せず、ただの ファウルとして あつかう。"},
+  {q:"インフィールドフライ宣告中、走者は どう あつかわれる?",c:["フォースは 消え、タッチが ひつよう","ふつうの フォースの まま"],a:0,e:"打者が すでに アウトなので 後ろの 走者は おされない。アウトに するには タッチが いる。",t:"フォースの 解除",td:"前の 走者が アウトに なると、後ろの 走者は フォースで なくなり タッチが ひつよう。"},
+  {q:"2アウト・1るいに 走者。第3ストライクを 捕手が 落とした! 振り逃げは?",c:["できる","できない"],a:0,e:"2アウトの ときは 1るいが ふさがって いても 振り逃げが できる。",t:"ふりにげの 条件",td:"0/1アウトは 1るいが あいている時だけ。2アウトなら 1るいの 状況に かかわらず できる。"},
+  {q:"0アウト・1るいに 走者。第3ストライクを 捕手が 落とした! 振り逃げは?",c:["できる","できない"],a:1,e:"1るいが ふさがり、2アウト未満なので 振り逃げは できない（打者は アウト）。",t:"ふりにげの 条件",td:"1るいに 走者が いて 2アウト未満の ときは 振り逃げ できない。"},
+  {q:"イニング3つ目の アウトが フォースアウト。その 前に 3るい走者が 生還して いたら 得点は?",c:["みとめられない","1てん 入る"],a:0,e:"フォースプレーで 第3アウトが 成立すると、その イニングの 得点は 入らない。",t:"フォースプレーの 第3アウト",td:"第3アウトが フォースなら、それ より前の 生還も 得点に ならない。"},
+  {q:"第3アウトが タッグプレー。走者は アウトより 先に 本塁を 踏んだ! 得点は?",c:["みとめられる","みとめられない"],a:0,e:"フォースでない 第3アウト（タイムプレー）は、先に 本塁を 踏めば 得点に なる。",t:"タイムプレー",td:"フォースでない 第3アウトでは、本塁通過が 先なら 得点が みとめられる。"},
+  {q:"申告敬遠（しんこくけいえん）とは?",c:["投球せず 申告だけで 打者を 1るいへ","4球 投げて 歩かせる"],a:0,e:"ベンチの 申告だけで 投げずに 打者を 1るいに 出す ルール。",t:"申告敬遠",td:"投球せず 監督の 申告で 打者を 1るいへ 歩かせる ルール。"},
+  {q:"捕手が バットに さわるなどして 打撃を じゃました! どうなる?",c:["打撃妨害で 打者は 1るいへ","ストライク"],a:0,e:"捕手の 妨害（キャッチャーインターフェア）で 打者は 1るいへ。",t:"打撃妨害",td:"捕手などが 打撃を 妨げる 反則。打者は 1るいが 与えられる。"},
+  {q:"1つの 塁に 走者が 2人いる。両方に タッチ! アウトに なるのは?",c:["後ろの 走者","前の 走者"],a:0,e:"塁の 占有権は 前の 走者。後ろの 走者が アウトに なる。",t:"占有権",td:"1つの 塁に 2人いる とき、塁の 権利は 前の 走者に ある。"},
+  {q:"走者が 前の 走者を 追い越して しまった! アウトは?",c:["追い越した（後ろの）走者","前の 走者"],a:0,e:"追い越した 後ろの 走者が アウトに なる。",t:"追い越し",td:"後ろの 走者が 前の 走者を 追い越すと、追い越した 走者が アウト。"},
+  {q:"走者が アウトを さける 目的いがいで 逆走した! どうなる?",c:["アウトに なる","セーフの まま"],a:0,e:"相手を まどわす ための 逆走は ゆるされず アウトに なる。",t:"逆走の きんし",td:"アウト回避いがいの 目的で 逆走すると アウト、ボールデッドに なる。"},
+  {q:"野手が グラブを 投げて フェアの 打球に 当てた! 走者は?",c:["3個の 進塁が 与えられる","1個 進塁"],a:0,e:"はずした 用具を 投げて 打球に 当てると、3個の 進塁が 与えられる。",t:"用具の 投てき",td:"はずした グラブ等を 打球に 当てると 3個（送球なら 2個）の 進塁。"},
+  {q:"ワンバウンドした 投球を 打者が 空振り! 判定は?",c:["ストライク","ボール"],a:0,e:"バウンドしても 空振りは ストライク。見逃せば ボール。",t:"ワンバウンドの 投球",td:"地面に ついた 投球でも 空振りすれば ストライクに なる。"},
+  {q:"ワンバウンドの 投球を 打者が 見逃した! 判定は?",c:["ストライク","ボール"],a:1,e:"バウンドした 投球を 振らなければ ボール。",t:"ワンバウンドの 投球",td:"地面に ついた 投球を 見逃せば ボール。"},
+  {q:"本塁での 衝突を ふせぐ ルールで、捕手は?",c:["ボールを 持たずに 走路を ふさいでは いけない","いつでも ブロックして よい"],a:0,e:"コリジョンルール。捕球前に 走路を ふさぐと 走者は セーフに なる。",t:"コリジョンルール",td:"本塁での 危険な 衝突を ふせぐ ため、捕手の 走路ブロックを 制限する ルール。"},
+  {q:"併殺を ふせぐ ため 走者が 野手めがけて 危険な スライディング! どうなる?",c:["走者と 打者走者の 2人 アウト","走者だけ アウト"],a:0,e:"違反スライディングで 妨害と され、ダブルプレーが 成立する。",t:"危険な スライディング",td:"併殺を ふせぐ ための 違法な スライディングは 守備妨害。2人 アウトに なる。"},
+  {q:"フェアの 打球が、内野手を 通過する 前に 走者に 当たった! どうなる?",c:["原則 走者が アウト","インプレー続行"],a:0,e:"野手が さわる前に 打球が 走者に 当たると、ふつう 走者の アウト。",t:"打球の 当たり",td:"内野手を 通過する 前に 打球が 走者に 当たると 原則 走者アウト。"},
+  {q:"フェアの 打球が、内野手を 通過した あと 走者に 当たった! どうなる?",c:["アウトに ならない（続行）","走者アウト"],a:0,e:"野手を 通過した あとなら 当たっても アウトには ならない。",t:"打球の 当たり",td:"内野手を 通過した あとの 打球が 当たっても 走者は アウトに ならない。"},
+  {q:"観客が グラウンドの 打球に さわった! どうなる?",c:["ボールデッドにして 審判が 処置を きめる","ホームラン"],a:0,e:"観客妨害は ボールデッド。審判が 進塁数などを 判断する。",t:"観客妨害(ファンインターフェア)",td:"観客が プレーに さわると ボールデッドに し、審判が 妥当な 処置を きめる。"},
+  {q:"投手が セットで 完全に 静止せず 投げた（走者あり）! どうなる?",c:["ボーク","セーフ"],a:0,e:"静止を しない 投球動作は ボーク。走者が 1個 すすむ。",t:"セットの 静止",td:"走者が いる時は いったん 完全に 静止してから 投げる。しないと ボーク。"},
+  {q:"ボークの あと、打者が 打って ヒットに! 全走者も 進塁。どうなる?",c:["プレーを 生かす（ボーク無視）","ボークで やり直し"],a:0,e:"打者が 出塁し 全走者が 1個以上 進めば、ボークは 無視して プレーを 生かす。",t:"ボーク後の 処置",td:"打者出塁＆全走者進塁なら プレー有効、そうでなければ ボークを 適用する。"},
+  {q:"打者が バッターボックスから 完全に 出て 打った! どうなる?",c:["反則打球で 打者アウト","ふつうの 打球"],a:0,e:"ボックスの そとで 打つと 反則打球。打者は アウト。",t:"反則打球",td:"バッターボックスの 外で 打つと 打者アウトに なる。"},
+  {q:"インフィールドフライで 野手が わざと 落とした! 打者は?",c:["アウトの まま","セーフ"],a:0,e:"インフィールドフライは 落としても 打者アウト。走者は 自己責任で 進塁可。",t:"IFFと 故意落球",td:"インフィールドフライでは 落球しても 打者アウトの まま。フォースは 生じない。"},
+  {q:"振り逃げの 打者走者が、1るいを あきらめて 円（サークル）の そとへ! どうなる?",c:["アウトが 確定する","やり直し"],a:0,e:"進塁の 意思を 放棄して ベンチへ 向かうと アウトに なる。",t:"アバンダン(放棄)",td:"打者走者が 1るいを めざす 意思を すてると アウトが 確定する。"},
+  {q:"サヨナラ本塁打! でも 走者が 本塁を 踏み忘れた。得点は?",c:["アピールで その 得点が 無効に なりうる","かならず 入る"],a:0,e:"全員 正しく 触塁が ひつよう。踏み忘れは アピールで 無効に される ことが ある。",t:"触塁の 義務",td:"本塁打でも 走者は 全ての 塁を 正しく 踏む 必要が ある。"},
+  {q:"タイムが かかって いないのに 守備が 気を ぬいた すきに 走者が 進塁! どうなる?",c:["インプレーなので 進塁は 有効","無効に なる"],a:0,e:"ボールインプレー中の 進塁は 認められる。気を ぬいた 守備の 責任。",t:"インプレー",td:"プレーが 止まって いない 間は、走者は すすむ ことが できる。"},
+  {q:"走塁妨害（オブストラクション）が おきたが プレーは 続いて いる。あつかいは?",c:["ボールインプレー（後で 処置）","すぐ ボールデッド"],a:0,e:"プレー続行型の オブストラクションは いったん 流し、あとで 妥当な 処置を する。",t:"ディレイドデッドボール",td:"すぐ 止めず プレーを 流し、終わってから 進塁などの 処置を する 反則。"},
+  {q:"走者が、打球を 処理しようと する 野手を よけなかった! どうなる?",c:["守備妨害で 走者アウト","セーフ"],a:0,e:"打球を 処理する 野手の じゃまを すると 守備妨害で アウト。",t:"守備妨害(走者)",td:"打球を 処理する 野手を 走者が 妨げると アウトに なる。"},
+  {q:"打球が 1るいベースや 3るいベースに 当たった! フェア? ファウル?",c:["フェア","ファウル"],a:0,e:"塁は フェア地域に あるので、当たれば フェア。",t:"ベースの 位置",td:"1・3るいベースは フェア地域。当たった 打球は フェアに なる。"},
+  {q:"救援投手は 何人と 対戦すれば 交代できる?",c:["最低 1人の 打者と 対戦する 義務が ある","いつでも 自由"],a:0,e:"出てきた 投手は、その 打者が 出塁か アウトに なるまで 投げる ぎむが ある（ケガ等を のぞく）。",t:"対戦義務",td:"救援投手は 少なくとも 1人の 打者を 完了させる まで 投げる ひつようが ある。"},
+ ]}
+};
+
+const screen=document.getElementById('screen');
+const plaque=document.getElementById('plaque');
+const best={};
+let cur=null,order=[],pos=0,score=0;
+
+function home(){
+  plaque.textContent="レベルを えらんでね";
+  const total=Object.values(DATA).reduce((s,d)=>s+d.q.length,0);
+  const row=(key)=>{const d=DATA[key];const b=best[key];
+    return `<button class="lvl ${d.color}" onclick="start('${key}')">
+      <span class="ic">${d.icon}</span><span class="tx"><b>${d.name}</b><small>${d.q.length}もん</small></span>
+      ${b!=null?`<span class="best">さいこう ${b}/${d.q.length}</span>`:""}</button>`;};
+  screen.innerHTML=`<div class="home-mascot">${mascot("happy")}</div>
+    <div class="home-lead">レベルを えらんで チャレンジ！<br>ぜんぶで ${total}もん あるよ ⚾</div>
+    <div class="levels">${row('shokyu')}${row('chukyu')}${row('jokyu')}${row('chojokyu')}</div>`;
+}
+
+function start(key){cur=key;order=[...Array(DATA[key].q.length).keys()];pos=0;score=0;question();}
+
+function question(){
+  const d=DATA[cur];const q=d.q[order[pos]];
+  plaque.textContent=`${d.name}`;
+  const letters=["A","B","C","D"];
+  const ch=q.c.map((c,i)=>`<button class="choice" onclick="answer(this,${i},${q.a})"><span class="mk">${letters[i]}</span><span>${c}</span></button>`).join("");
+  const pct=Math.round((pos)/d.q.length*100);
+  screen.innerHTML=`
+    <div class="topbar"><span class="qnum">だい ${pos+1} もん / ${d.q.length}</span><span class="score-pill">⚾ ${score}てん</span></div>
+    <div class="pbar"><i style="width:${pct}%"></i></div>
+    <div class="qtext"><span class="qm">Q.</span> ${q.q}</div>
+    <div class="choices" id="choices">${ch}</div>
+    <div class="feedback" id="fb"><span class="head"></span><span>${q.e}</span>
+      <div class="term"><span class="tl">ことば</span><b>${q.t}</b>：${q.td}</div></div>
+    <div class="qfoot">
+      <button class="btn btn-quit" onclick="home()">やめる</button>
+      <button class="btn btn-next" id="nextBtn" onclick="nextQ()" disabled>つぎへ ▶</button></div>`;
+}
+
+function answer(btn,picked,correct){
+  const box=document.getElementById('choices');
+  if(box.dataset.done) return;
+  box.dataset.done="1";
+  [...box.children].forEach((b,i)=>{b.classList.add('locked');
+    if(i===correct) b.classList.add('correct');
+    if(i===picked&&picked!==correct) b.classList.add('wrong');});
+  const fb=document.getElementById('fb');const head=fb.querySelector('.head');
+  if(picked===correct){score++;fb.className='feedback good show';head.textContent='⚾ せいかい！';}
+  else{fb.className='feedback bad show';head.textContent='ざんねん… こたえは こっち';}
+  const nb=document.getElementById('nextBtn');nb.disabled=false;
+  nb.textContent=(pos===DATA[cur].q.length-1)?"けっか を みる 🏁":"つぎへ ▶";
+}
+
+function nextQ(){pos++;if(pos>=DATA[cur].q.length) result();else question();}
+
+function result(){
+  const d=DATA[cur];const total=d.q.length;
+  if(best[cur]==null||score>best[cur]) best[cur]=score;
+  const ratio=score/total;let stars,face,msg;
+  if(ratio===1){stars="⭐⭐⭐";face="cheer";msg="パーフェクト！ きみは やきゅうマスターだ！";}
+  else if(ratio>=0.7){stars="⭐⭐☆";face="cheer";msg="すごい！ ルールは ばっちりだね！";}
+  else if(ratio>=0.4){stars="⭐☆☆";face="happy";msg="いいちょうし！ もういちど やって レベルアップ！";}
+  else{stars="☆☆☆";face="soft";msg="だいじょうぶ、なんども やれば おぼえられるよ！";}
+  plaque.textContent="けっか はっぴょう";
+  screen.innerHTML=`<div class="res"><div class="res-mascot">${mascot(face)}</div>
+    <div class="res-head">${d.name} クリア！</div><div class="stars">${stars}</div>
+    <div class="res-score">${score}<small> / ${total}</small></div><div class="res-msg">${msg}</div>
+    <div class="res-btns"><button class="btn btn-retry" onclick="start('${cur}')">もういちど 🔁</button>
+      <button class="btn btn-home" onclick="home()">レベルを えらぶ 🏠</button></div></div>`;
+}
+
+home();
+</script>
+</body>
+</html>
